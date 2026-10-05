@@ -13,8 +13,6 @@ export function getConfig() {
   try { local = JSON.parse(localStorage.getItem('otimizador.cloud') || '{}'); } catch (_) { /* sem storage */ }
   return {
     microsoft: { clientId: local.msClient || base.microsoft?.clientId || '', tenantId: local.msTenant || base.microsoft?.tenantId || 'organizations' },
-    google: { clientId: local.gClient || base.google?.clientId || '' },
-    dropbox: { appKey: local.dbKey || base.dropbox?.appKey || '' },
   };
 }
 

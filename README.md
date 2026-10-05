@@ -1,6 +1,6 @@
 # Otimizador de Imagens · Digi
 
-Plataforma web para **converter, redimensionar, renomear e otimizar imagens em lote**, com leitura direta de pastas do **SharePoint/OneDrive, Google Drive e Dropbox**. Roda 100% no navegador: as imagens não passam por nenhum servidor, então não há custo de hospedagem nem de processamento.
+Plataforma web para **converter, redimensionar, renomear e otimizar imagens em lote**, com leitura direta de pastas do **SharePoint/OneDrive**. Por padrão roda 100% no navegador, sem servidor e sem custo. Há também um modo **Online**, gratuito, que processa os lotes nos servidores do GitHub Actions.
 
 ## O que ela faz
 
@@ -19,91 +19,117 @@ Plataforma web para **converter, redimensionar, renomear e otimizar imagens em l
 | Nomes | Manter, prefixo, sufixo, prefixo + sufixo, sequência numerada, modelo com tokens (`{nome}` `{n}` `{largura}` `{altura}` `{dim}` `{formato}` `{qualidade}` `{data}` `{pasta}`), dimensões ao fim (`-1920x1080`), formato ao fim (`-webp`), nome amigável para web |
 | Ajustes | Girar, espelhar, preto e branco, nitidez após reduzir. Remove EXIF/GPS e aplica a rotação do celular |
 | Lote | Arrastar arquivos ou pastas inteiras, colar (Ctrl+V), links diretos, processamento paralelo |
+| Onde processar | **No navegador** (padrão) ou **Online** (GitHub Actions). Imagens do SharePoint são sempre processadas no navegador |
 | Saída | ZIP (mantendo subpastas), salvar direto numa pasta do computador (Chrome/Edge), enviar de volta para a nuvem (em subpasta ou na mesma pasta) |
+| Visual | Tema claro e escuro (segue o sistema, com botão no topo), favicon animado que mostra o progresso do lote, imagem de compartilhamento (OG) |
 | Extras | Comparador antes/depois, resumo da economia, predefinições (Web, Redes sociais, E-mail marketing, Miniatura, Responsivo…) e predefinições próprias, código `<img srcset>` pronto com `width`, `height` e `loading="lazy"` |
 
 ## Estrutura
 
 ```
 index.html              interface
-auth-callback.html      página de retorno do login (Microsoft e Dropbox)
-logo-rosa.png           ← suba a logo da Digi aqui (sem ela aparece "digi" em texto)
+auth-callback.html      página de retorno do login da Microsoft
 .nojekyll               faz o GitHub Pages servir todos os arquivos como estão
+public/
+  logo-rosa.png         logo do topo (temas claro e escuro)
+  logo-escuro.png       logo do rodapé no tema claro
+  logo-claro.png        logo do rodapé no tema escuro
+  favicon.svg / favicon-32.png / apple-touch-icon.png
+  og-image.png          imagem de compartilhamento (1200×630)
 assets/
-  css/styles.css        identidade visual (todas as cores no topo do arquivo)
-  js/config.js          IDs das integrações com nuvem  ← único arquivo a editar
+  css/styles.css        identidade visual: cores do tema claro no topo, tema escuro no fim
+  js/config.js          IDs do app do SharePoint (já preenchidos)
+  js/favicon.js         animação do favicon
+  js/online.js          envio e acompanhamento do processamento online
   js/app.js             fila, opções, downloads e envio
   js/worker.js          processamento (roda em segundo plano)
   js/dims.js            cálculo de dimensões
   js/naming.js          regras de nomes
-  js/cloud/             microsoft.js · google.js · dropbox.js · common.js
+  js/cloud/             microsoft.js · common.js
 vendor/                 bibliotecas de código aberto já incluídas (sem CDN)
 ```
 
 ## Publicar no GitHub Pages
 
 1. Crie um repositório (ex.: `otimizador`) e envie **todo o conteúdo desta pasta** para a raiz (inclusive `.nojekyll` e a pasta `vendor`).
-2. Suba a `logo-rosa.png` na raiz.
-3. Em **Settings → Pages**, escolha *Deploy from a branch*, branch `main`, pasta `/ (root)`.
-4. Em 1–2 minutos o site fica em `https://SEU-USUARIO.github.io/otimizador/`.
+2. Em **Settings → Pages**, escolha *Deploy from a branch*, branch `main`, pasta `/ (root)`.
+3. Em 1–2 minutos o site fica em `https://digicriacao.github.io/otimizador/`.
 
-Pronto: conversão, otimização, renomeação e lote já funcionam sem nenhuma chave. As integrações com nuvem são opcionais e estão abaixo.
+Pronto: conversão, otimização, renomeação e lote funcionam sem nenhuma chave.
+
+> **Compartilhamento (OG):** as tags apontam para `https://digicriacao.github.io/otimizador/`. Se o endereço mudar (outro repositório ou domínio próprio), troque esse endereço nas tags `og:` e `twitter:` do `index.html`. Para conferir a prévia, use o [Post Inspector do LinkedIn](https://www.linkedin.com/post-inspector/) ou o [Sharing Debugger do Facebook](https://developers.facebook.com/tools/debug/).
 
 > Não abra o `index.html` com duplo clique: o navegador bloqueia os módulos em `file://`. Para testar no computador, rode `python -m http.server` na pasta e acesse `http://localhost:8000`.
 
-## APIs: o que você precisa fornecer
+## SharePoint / OneDrive (Microsoft Graph)
 
-Todas são **gratuitas**. Nenhuma pede cartão. O que vai no código é só um ID público de aplicativo (não é senha), então pode ficar no GitHub.
+O app da Digi já está configurado em `assets/js/config.js`:
 
-| Integração | O que fornecer | Onde criar | Custo |
-| --- | --- | --- | --- |
-| Arquivos locais, links, pastas sincronizadas | nada | — | grátis |
-| SharePoint / OneDrive | **Client ID** (+ Tenant ID) | Microsoft Entra ID | grátis |
-| Google Drive | **OAuth Client ID** | Google Cloud Console | grátis |
-| Dropbox | **App key** | Dropbox App Console | grátis |
+| Campo | Valor |
+| --- | --- |
+| ID do aplicativo (cliente) | `d7ece8ff-91c1-4808-b7cd-eda1dbd1a368` |
+| ID do diretório (locatário) | `16d33860-3ad3-492d-a8cb-1ef530cbaab8` |
 
-Depois de criar, cole os IDs em `assets/js/config.js` (vale para toda a equipe) ou no ícone de engrenagem do site (vale só para aquele navegador).
+Esses IDs são públicos (não são senhas). Para o login funcionar, confira no [Microsoft Entra](https://entra.microsoft.com) → **Registros de aplicativo → Otimizador**:
 
-Em todos os casos o **endereço de retorno** é:
-`https://SEU-USUARIO.github.io/otimizador/auth-callback.html`
-(a engrenagem do site mostra o endereço exato).
+1. **Autenticação → Adicionar plataforma → Aplicativo de página única (SPA)** com o URI de redirecionamento
+   `https://digicriacao.github.io/otimizador/auth-callback.html`
+   (precisa ser do tipo **SPA**; se estiver como "Web", o login falha com erro AADSTS9002326).
+2. **Permissões de API → Microsoft Graph → Permissões delegadas**: `Files.ReadWrite.All`, `Sites.Read.All` e `User.Read`.
+3. Se a empresa bloqueia consentimento de usuários, o administrador precisa clicar em **Conceder consentimento do administrador para Digi**.
+4. Para testar no computador (`http://localhost:8000`), adicione também `http://localhost:8000/auth-callback.html` como SPA.
 
-> **Atalho sem API:** se a pasta do SharePoint estiver sincronizada pelo OneDrive no computador, basta usar *Selecionar pasta inteira* e depois *Salvar em pasta* apontando para a mesma pasta sincronizada. O OneDrive sobe o resultado sozinho.
+Uso: no SharePoint, clique com o botão direito na pasta → **Copiar link** → cole na aba SharePoint → *Carregar pasta*. Depois de otimizar, *Enviar para a nuvem* grava o resultado numa subpasta (padrão `otimizadas`) ou na mesma pasta.
 
-### 1. SharePoint / OneDrive (Microsoft Graph)
+> **Atalho sem login:** se a pasta do SharePoint estiver sincronizada pelo OneDrive no computador, use *Selecionar pasta inteira* e depois *Salvar em pasta* apontando para a mesma pasta sincronizada. O OneDrive sobe o resultado sozinho.
 
-1. Acesse [entra.microsoft.com](https://entra.microsoft.com) → **Aplicativos → Registros de aplicativo → Novo registro**.
-2. Nome: `Otimizador Digi`. Tipos de conta: *Somente contas deste diretório* (recomendado).
-3. **URI de redirecionamento**: plataforma **Aplicativo de página única (SPA)** → cole o endereço de retorno acima.
-4. Em **Permissões de API → Adicionar → Microsoft Graph → Permissões delegadas**, adicione `Files.ReadWrite.All`, `Sites.Read.All` e `User.Read`.
-5. Se a empresa bloqueia consentimento de usuários, peça ao administrador para clicar em **Conceder consentimento do administrador**.
-6. Copie o **ID do aplicativo (cliente)** e o **ID do diretório (locatário)** para o `config.js`.
+## Processamento online (GitHub Actions)
 
-Uso: no SharePoint, clique com o botão direito na pasta → **Copiar link** → cole na aba SharePoint → *Carregar pasta*.
+No topo da fila, o seletor **No navegador / Online** escolhe onde as imagens são processadas. No modo Online:
 
-### 2. Google Drive
+1. a plataforma compacta o lote e cria um branch temporário `jobs/<id>` num **repositório privado**;
+2. o GitHub Actions otimiza as imagens (sharp/libvips, MozJPEG, libwebp, libavif, Gifsicle, HEIC);
+3. a plataforma baixa o resultado para a mesma fila e **apaga o branch**. Um workflow diário apaga lotes esquecidos.
 
-1. Acesse [console.cloud.google.com](https://console.cloud.google.com), crie um projeto e ative a **Google Drive API** (*APIs e serviços → Biblioteca*).
-2. Em **Tela de consentimento OAuth**, escolha **Interno** se a Digi usa Google Workspace (evita a verificação do Google). Se for conta Gmail comum, use *Externo* e adicione os e-mails da equipe como **usuários de teste**.
-3. Em **Credenciais → Criar credenciais → ID do cliente OAuth → Aplicativo da Web**.
-4. Em **Origens JavaScript autorizadas**, adicione `https://SEU-USUARIO.github.io`.
-5. Copie o **ID do cliente** (termina em `.apps.googleusercontent.com`) para o `config.js`.
+As opções, os nomes, o ZIP, o comparador e o código `<picture>` funcionam igual aos do modo local.
 
-### 3. Dropbox
+**Fica sempre no navegador:** imagens do SharePoint, SVG e BMP. Em lotes misturados, essas imagens são processadas localmente e as demais vão para a nuvem.
 
-1. Acesse [dropbox.com/developers/apps](https://www.dropbox.com/developers/apps) → **Create app** → *Scoped access* → *Full Dropbox*.
-2. Aba **Permissions**: marque `files.metadata.read`, `files.content.read`, `files.content.write` e `sharing.read` e clique em *Submit*.
-3. Aba **Settings**: em *OAuth 2 → Redirect URIs*, adicione o endereço de retorno; em *Allow public clients (Implicit Grant & PKCE)*, deixe **Allow**.
-4. Copie o **App key** para o `config.js`.
-5. Enquanto o app estiver em modo de desenvolvimento, até 500 usuários podem conectar, o que costuma bastar para uso interno.
+**Por que um repositório separado e privado:** o repositório do site precisa ser público para o GitHub Pages gratuito. Se os lotes fossem para ele, as imagens ficariam visíveis enquanto processam.
+
+### Configuração (uma vez)
+
+1. **Crie o repositório privado** `digicriacao/otimizador-processamento`. Se usar outro nome, troque `github.repo` em `assets/js/config.js`.
+2. **Envie o conteúdo da pasta `processamento-online`** (do ZIP separado) para a raiz desse repositório, incluindo a pasta oculta `.github`.
+   - Se o upload pelo navegador ignorar a pasta `.github` (o Mac esconde pastas com ponto), crie os dois arquivos em **Add file → Create new file**, com os caminhos `.github/workflows/processar.yml` e `.github/workflows/limpar.yml`, e cole o conteúdo de cada um.
+3. Ainda no repositório privado, vá em **Settings → Actions → General** e confira duas opções:
+   - *Actions permissions* deve permitir as actions.
+   - Em *Workflow permissions*, marque **Read and write permissions**.
+4. **Cada pessoa cria o próprio token** em [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new):
+   - Tipo: **Fine-grained**.
+   - *Resource owner*: `digicriacao`.
+   - *Repository access*: **Only select repositories → otimizador-processamento**.
+   - *Permissions → Repository*: **Contents: Read and write** e **Actions: Read-only**.
+   - Validade: até 1 ano. O GitHub avisa por e-mail antes de expirar.
+5. Na plataforma, clique na **engrenagem**, cole o token e use **Testar conexão**. O token fica salvo só naquele navegador e nunca vai para o código.
+
+O token precisa ser de alguém com acesso ao repositório privado. Para dar acesso a mais pessoas, adicione-as como colaboradoras em *Settings → Collaborators*.
+
+### Custos e limites
+
+- Repositórios privados no plano gratuito do GitHub têm **2.000 minutos de Actions por mês**. Cada lote usa cerca de 1 minuto de preparação mais o tempo de processamento. Fotos comuns levam menos de 1 s cada; AVIF demora mais.
+- Lotes acima de ~40 MB ou de 150 imagens são divididos automaticamente, e até 3 lotes rodam ao mesmo tempo.
+- O resultado de cada lote precisa ter menos de 100 MB (limite da API do GitHub).
+- Entre o clique e o início do processamento costuma haver de 20 a 60 s (fila do GitHub + instalação). Para poucas imagens, o modo local é mais rápido. O online compensa em lotes grandes, em computadores mais fracos e com HEIC/AVIF.
+- A lógica de dimensões está em dois lugares: `assets/js/dims.js` (site) e `processar/dims.js` (repositório privado). Se mudar uma, copie para a outra.
 
 ## Limites e observações
 
-- **Tudo roda no computador de quem usa.** Lotes de centenas de fotos funcionam, mas o tempo depende da máquina. AVIF é o formato mais lento de gerar.
+- **No modo No navegador, tudo roda no computador de quem usa.** Lotes de centenas de fotos funcionam, mas o tempo depende da máquina. AVIF é o formato mais lento de gerar; para lotes pesados, use o modo Online.
 - **GIF para WebP/AVIF animado** não está incluído: ao desmarcar *Manter GIFs animados*, o GIF vira imagem estática (1º quadro).
 - **Links diretos** só funcionam com sites que permitem download por outros domínios (CORS).
 - **Salvar em pasta** usa a File System Access API: Chrome e Edge. Nos outros navegadores, use o ZIP.
-- **HEIC** é convertido com `heic2any` (pode demorar em fotos grandes).
+- **HEIC** é convertido com `heic2any` no navegador (pode demorar em fotos grandes) ou com `heic-convert` no modo Online.
 - Metadados (EXIF, GPS, perfil de câmera) são sempre removidos.
 
 ## Bibliotecas incluídas (todas de código aberto)

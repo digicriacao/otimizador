@@ -1,19 +1,16 @@
 /* =========================================================================
-   Configuração das integrações com nuvem
-   Preencha os IDs abaixo para que funcionem para TODA a equipe.
-   Eles são identificadores públicos de aplicativo, não são senhas:
-   podem ficar no GitHub sem problema.
-   (Também dá para preencher só no seu navegador, pelo ícone de engrenagem.)
+   Configuração da integração com o SharePoint / OneDrive
+   Estes IDs são identificadores públicos do app no Microsoft Entra,
+   não são senhas: podem ficar no GitHub sem problema.
    ========================================================================= */
 window.OTIMIZADOR_CONFIG = {
   microsoft: {
-    clientId: '',              // Microsoft Entra ID > Registros de aplicativo > ID do aplicativo (cliente)
-    tenantId: 'organizations', // ID do diretório da Digi, ou 'organizations' para qualquer conta corporativa
+    clientId: 'd7ece8ff-91c1-4808-b7cd-eda1dbd1a368', // ID do aplicativo (cliente)
+    tenantId: '16d33860-3ad3-492d-a8cb-1ef530cbaab8', // ID do diretório (locatário) da Digi
   },
-  google: {
-    clientId: '',              // Google Cloud > APIs e serviços > Credenciais > ID do cliente OAuth (termina em .apps.googleusercontent.com)
-  },
-  dropbox: {
-    appKey: '',                // Dropbox App Console > seu app > App key
+  // Processamento online (GitHub Actions). Repositório PRIVADO que recebe os lotes.
+  // O token não fica aqui: cada pessoa informa o seu na engrenagem do site.
+  github: {
+    repo: 'digicriacao/otimizador-processamento',
   },
 };

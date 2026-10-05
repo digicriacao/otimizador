@@ -4,8 +4,39 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Otimizador de Imagens · Digi</title>
-<meta name="description" content="Converta, redimensione e otimize imagens em lote, direto no navegador.">
-<link rel="icon" type="image/png" href="logo-rosa.png">
+<meta name="description" content="Converta, redimensione, renomeie e otimize imagens em lote, direto no navegador. JPG, PNG, WebP, AVIF e GIF, com integração ao SharePoint.">
+<meta name="theme-color" content="#EA0356">
+
+<!-- Compartilhamento (Open Graph / redes sociais) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Digi">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="Otimizador de Imagens · Digi">
+<meta property="og:description" content="Converta, redimensione, renomeie e otimize imagens em lote, direto no navegador. JPG, PNG, WebP, AVIF e GIF, com integração ao SharePoint.">
+<meta property="og:url" content="https://digicriacao.github.io/otimizador/">
+<meta property="og:image" content="https://digicriacao.github.io/otimizador/public/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Otimizador de Imagens da Digi">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Otimizador de Imagens · Digi">
+<meta name="twitter:description" content="Converta, redimensione, renomeie e otimize imagens em lote, direto no navegador. JPG, PNG, WebP, AVIF e GIF, com integração ao SharePoint.">
+<meta name="twitter:image" content="https://digicriacao.github.io/otimizador/public/og-image.png">
+
+<!-- Favicon (a animação é aplicada pelo assets/js/favicon.js) -->
+<link rel="icon" type="image/svg+xml" href="public/favicon.svg" id="favicon">
+<link rel="icon" type="image/png" sizes="32x32" href="public/favicon-32.png">
+<link rel="apple-touch-icon" href="public/apple-touch-icon.png">
+
+<!-- Aplica o tema antes de desenhar a página (evita piscar) -->
+<script>
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem('otimizador.theme'); } catch (e) {}
+    if (t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -15,11 +46,15 @@
 
 <header class="topbar">
   <div class="topbar-inner">
-    <img class="logo" src="logo-rosa.png" alt="digi" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-fallback',textContent:'digi'}))">
+    <img class="logo" src="public/logo-rosa.png" alt="digi" width="54" height="30" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-fallback',textContent:'digi'}))">
     <div class="divider"></div>
     <div class="brand-title">Otimizador <span>de imagens</span></div>
     <div class="spacer"></div>
-    <span class="privacy-pill" title="As imagens são processadas no seu navegador. Nada é enviado para servidores."><i></i>Processamento local</span>
+    <span class="privacy-pill" id="modePill" title="As imagens são processadas no seu navegador. Nada é enviado para servidores."><i></i><span>Processamento local</span></span>
+    <button class="icon-btn theme-toggle" id="btnTheme" title="Alternar tema claro/escuro" aria-label="Alternar tema">
+      <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+    </button>
     <button class="icon-btn" id="btnSettings" title="Integrações e configurações" aria-label="Configurações">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
@@ -33,8 +68,6 @@
       <nav class="tabs" role="tablist">
         <button class="tab active" data-tab="local"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>Arquivos</button>
         <button class="tab" data-tab="sharepoint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>SharePoint / OneDrive</button>
-        <button class="tab" data-tab="gdrive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3h8l6 10-4 7H6l-4-7z"/><path d="M8 3l6 10h8M2 13h12l-4 7"/></svg>Google Drive</button>
-        <button class="tab" data-tab="dropbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3l5 3.2L7 9.5 2 6.2zM17 3l5 3.2-5 3.3-5-3.3zM2 12.8l5-3.3 5 3.3-5 3.2zM22 12.8l-5-3.3-5 3.3 5 3.2zM7 17.3l5 3.2 5-3.2"/></svg>Dropbox</button>
         <button class="tab" data-tab="url"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Links</button>
       </nav>
 
@@ -58,7 +91,7 @@
       <div class="tab-panel hidden" data-panel="sharepoint">
         <div class="cloud-form">
           <div class="cloud-status" id="msStatus"><span class="dot"></span><span>Não conectado</span></div>
-          <div class="notice hidden" id="msNotice">Para usar o SharePoint é preciso cadastrar o app no Microsoft Entra (gratuito) e colar o <b>Client ID</b> em <a href="#" data-open-settings>Configurações</a>. O passo a passo está no README.</div>
+          <div class="notice hidden" id="msNotice">A integração com o SharePoint ainda não foi configurada. Informe o <b>Client ID</b> em <a href="#" data-open-settings>Configurações</a> (passo a passo no README).</div>
           <label class="label">Link da pasta (SharePoint ou OneDrive)</label>
           <div class="cloud-row">
             <input type="url" id="msLink" placeholder="https://suaempresa.sharepoint.com/:f:/s/Marketing/...">
@@ -66,34 +99,6 @@
           </div>
           <label class="check"><input type="checkbox" id="msRecursive" checked><span>Incluir subpastas</span></label>
           <p class="cloud-hint">Cole o link de compartilhamento da pasta (botão "Copiar link" no SharePoint). Depois de otimizar, use <b>Enviar para a nuvem</b> para salvar o resultado de volta.</p>
-        </div>
-      </div>
-
-      <!-- Google Drive -->
-      <div class="tab-panel hidden" data-panel="gdrive">
-        <div class="cloud-form">
-          <div class="cloud-status" id="gStatus"><span class="dot"></span><span>Não conectado</span></div>
-          <div class="notice hidden" id="gNotice">Para usar o Google Drive é preciso criar um <b>OAuth Client ID</b> no Google Cloud (gratuito) e colar em <a href="#" data-open-settings>Configurações</a>. O passo a passo está no README.</div>
-          <label class="label">Link da pasta do Google Drive</label>
-          <div class="cloud-row">
-            <input type="url" id="gLink" placeholder="https://drive.google.com/drive/folders/...">
-            <button class="btn btn-primary" id="gLoad">Carregar pasta</button>
-          </div>
-          <label class="check"><input type="checkbox" id="gRecursive" checked><span>Incluir subpastas</span></label>
-        </div>
-      </div>
-
-      <!-- Dropbox -->
-      <div class="tab-panel hidden" data-panel="dropbox">
-        <div class="cloud-form">
-          <div class="cloud-status" id="dbStatus"><span class="dot"></span><span>Não conectado</span></div>
-          <div class="notice hidden" id="dbNotice">Para usar o Dropbox é preciso criar um app no Dropbox (gratuito) e colar o <b>App key</b> em <a href="#" data-open-settings>Configurações</a>. O passo a passo está no README.</div>
-          <label class="label">Link compartilhado da pasta do Dropbox</label>
-          <div class="cloud-row">
-            <input type="url" id="dbLink" placeholder="https://www.dropbox.com/scl/fo/...">
-            <button class="btn btn-primary" id="dbLoad">Carregar pasta</button>
-          </div>
-          <label class="check"><input type="checkbox" id="dbRecursive" checked><span>Incluir subpastas</span></label>
         </div>
       </div>
 
@@ -113,6 +118,9 @@
       <div class="queue-head">
         <h2>Fila <span class="count" id="qCount">0 imagens</span></h2>
         <div class="spacer"></div>
+        <div class="seg mode-seg" id="modeSeg" title="Onde as imagens são processadas">
+          <button data-v="local" class="active">No navegador</button><button data-v="online">Online</button>
+        </div>
         <button class="btn btn-ghost btn-sm" id="btnClear">Limpar fila</button>
         <button class="btn btn-primary" id="btnRun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>Otimizar tudo</button>
       </div>
@@ -137,13 +145,15 @@
 
   <!-- ============================ PAINEL DE OPÇÕES ============================ -->
   <aside class="card settings" id="settingsPanel">
-    <div class="card-pad" style="padding-bottom:8px">
-      <h2 class="section">Predefinições</h2>
-      <div class="chips" id="presets"></div>
-      <div style="margin-top:10px"><button class="btn btn-ghost btn-sm" id="btnSavePreset" style="padding-left:0">+ Salvar configuração atual</button></div>
-    </div>
+    <details class="group presets-group">
+      <summary><span class="num">★</span>Predefinições<span class="sum-val" id="sumPreset"></span></summary>
+      <div class="group-body">
+        <div class="chips" id="presets"></div>
+        <div style="margin-top:10px"><button class="btn btn-ghost btn-sm" id="btnSavePreset" style="padding-left:0">+ Salvar configuração atual</button></div>
+      </div>
+    </details>
 
-    <details class="group" open>
+    <details class="group">
       <summary><span class="num">1</span>Formato e qualidade<span class="sum-val" id="sumFormat"></span></summary>
       <div class="group-body">
         <div class="field">
@@ -180,7 +190,7 @@
       </div>
     </details>
 
-    <details class="group" open>
+    <details class="group">
       <summary><span class="num">2</span>Redimensionar<span class="sum-val" id="sumResize"></span></summary>
       <div class="group-body">
         <div class="field">
@@ -213,7 +223,7 @@
       </div>
     </details>
 
-    <details class="group" open>
+    <details class="group">
       <summary><span class="num">3</span>Nome dos arquivos<span class="sum-val" id="sumName"></span></summary>
       <div class="group-body">
         <div class="field">
@@ -276,7 +286,7 @@
     </details>
 
     <details class="group">
-      <summary><span class="num">6</span>Avançado</summary>
+      <summary><span class="num">6</span>Avançado<span class="sum-val"></span></summary>
       <div class="group-body">
         <label class="check"><input type="checkbox" id="skipLarger" checked><span>Manter o original se o resultado ficar maior<small>Só quando formato e tamanho não mudam.</small></span></label>
         <label class="check"><input type="checkbox" id="svgOptimize" checked><span>Otimizar SVG como vetor<small>Quando o formato for "Original", o SVG é limpo (SVGO) em vez de virar imagem.</small></span></label>
@@ -291,7 +301,7 @@
   </aside>
 </main>
 
-<footer class="foot">Feito pela Digi · Codecs MozJPEG, OxiPNG, libwebp, libavif (Squoosh) e Gifsicle rodando em WebAssembly no seu navegador.</footer>
+<footer class="foot"><img class="logo-theme-light" src="public/logo-escuro.png" alt="digi" width="32" height="18"><img class="logo-theme-dark" src="public/logo-claro.png" alt="digi" width="32" height="18"><span>Codecs MozJPEG, OxiPNG, libwebp, libavif (Squoosh) e Gifsicle rodando em WebAssembly no seu navegador.</span></footer>
 
 <!-- Comparar antes/depois -->
 <div class="modal hidden" id="cmpModal">
@@ -312,14 +322,18 @@
 <!-- Configurações / integrações -->
 <div class="modal hidden" id="setModal">
   <div class="modal-box narrow">
-    <div class="modal-head"><h3>Integrações com nuvem</h3><button class="icon-btn" data-close aria-label="Fechar">✕</button></div>
+    <div class="modal-head"><h3>Integrações</h3><button class="icon-btn" data-close aria-label="Fechar">✕</button></div>
     <div class="modal-body">
-      <p class="cloud-hint" style="margin-bottom:16px">Os IDs abaixo são públicos (não são senhas) e ficam salvos só neste navegador. Para valer para toda a equipe, preencha também o arquivo <code class="mono">assets/js/config.js</code> no GitHub.</p>
+      <p class="cloud-hint" style="margin-bottom:16px">A integração já vem configurada para a Digi pelo arquivo <code class="mono">assets/js/config.js</code>. Só altere aqui se quiser usar outro app neste navegador. Os IDs são públicos, não são senhas.</p>
       <div class="field"><label>Microsoft (SharePoint / OneDrive) · Client ID</label><input type="text" id="cfgMsClient" placeholder="00000000-0000-0000-0000-000000000000"></div>
       <div class="field"><label>Microsoft · Tenant ID <small>ou "organizations"</small></label><input type="text" id="cfgMsTenant" placeholder="organizations"></div>
-      <div class="field"><label>Google Drive · OAuth Client ID</label><input type="text" id="cfgGClient" placeholder="xxxx.apps.googleusercontent.com"></div>
-      <div class="field"><label>Dropbox · App key</label><input type="text" id="cfgDbKey" placeholder="abc123xyz"></div>
-      <p class="help">Endereço deste site para cadastrar nos apps (Redirect URI): <b class="mono" id="cfgRedirect"></b></p>
+      <p class="help">Endereço de retorno para cadastrar no app (Redirect URI, plataforma SPA): <b class="mono" id="cfgRedirect"></b></p>
+
+      <h4 class="modal-sub">Processamento online (GitHub)</h4>
+      <p class="cloud-hint" style="margin-bottom:12px">Cada pessoa usa o próprio token do GitHub, que fica salvo só neste navegador. Imagens do SharePoint são sempre processadas no navegador.</p>
+      <div class="field"><label>Repositório de processamento <small>privado</small></label><input type="text" id="cfgGhRepo" placeholder="digicriacao/otimizador-processamento"></div>
+      <div class="field"><label>Token do GitHub <small>fine-grained, só esse repositório</small></label><input type="password" id="cfgGhToken" placeholder="github_pat_…" autocomplete="off"></div>
+      <div style="display:flex;gap:8px;align-items:center;margin:-4px 0 16px;flex-wrap:wrap"><button class="btn btn-sm" id="cfgGhTest">Testar conexão</button><span class="cloud-hint" id="cfgGhResult"></span></div>
       <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" data-close>Cancelar</button><button class="btn btn-primary" id="cfgSave">Salvar</button></div>
     </div>
   </div>
@@ -328,6 +342,7 @@
 <div class="toasts" id="toasts"></div>
 
 <script src="assets/js/config.js"></script>
+<script src="assets/js/favicon.js"></script>
 <script type="module" src="assets/js/app.js"></script>
 </body>
 </html>

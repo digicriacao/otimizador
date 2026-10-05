@@ -2,12 +2,11 @@
    Otimizador Digi — aplicação principal
    ========================================================================= */
 import { buildName, splitName, uniqueName } from './naming.js';
-import { computeTargets } from './dims.js';
+import { computeTargets, cropBox } from './dims.js';
 import { zipSync } from '../../vendor/fflate.js';
 import { loadScript, isImageName } from './cloud/common.js';
 import { microsoft } from './cloud/microsoft.js';
-import { google } from './cloud/google.js';
-import { dropbox } from './cloud/dropbox.js';
+import { onlineConfig, saveOnlineConfig, isOnlineReady, canProcessOnline, splitJobs, runOnlineJob, testOnline } from './online.js';
 
 const $ = (id) => document.getElementById(id);
 const $$ = (sel, el = document) => [...el.querySelectorAll(sel)];
@@ -19,7 +18,7 @@ const store = {
 
 /* ============================== Estado ================================ */
 const state = { items: [], running: false, nextId: 1 };
-const PROVIDERS = { microsoft, google, dropbox };
+const PROVIDERS = { microsoft };
 
 /* ============================ Predefinições ============================ */
 const BUILTIN_PRESETS = [
@@ -133,12 +132,13 @@ function renderPresets() {
   const el = $('presets');
   const all = [...BUILTIN_PRESETS.map((p) => ({ ...p, builtin: true })), ...custom];
   el.innerHTML = '';
+  let activeName = '';
   all.forEach((p, i) => {
     const b = document.createElement('button');
     b.className = 'chip';
     const full = { ...PRESET_DEFAULTS, ...p.s };
     const match = Object.keys(full).every((k) => String(readSettings()[k]) === String(full[k]));
-    if (match) b.classList.add('active');
+    if (match) { b.classList.add('active'); activeName = p.name; }
     b.textContent = p.name;
     if (!p.builtin) {
       const x = document.createElement('span'); x.className = 'x'; x.textContent = '×'; x.title = 'Excluir';
@@ -148,6 +148,7 @@ function renderPresets() {
     b.onclick = () => { applySettings({ ...PRESET_DEFAULTS, ...p.s }); toast(`Predefinição "${p.name}" aplicada`); };
     el.appendChild(b);
   });
+  $('sumPreset').textContent = activeName || 'Personalizado';
   void cur;
 }
 function readPresetComparable() { const s = readSettings(); delete s.prefix; return s; }
@@ -254,8 +255,6 @@ $('urlLoad').onclick = async () => {
 /* ============================ Nuvem: carregar =========================== */
 const CLOUD_UI = {
   microsoft: { tab: 'sharepoint', link: 'msLink', btn: 'msLoad', rec: 'msRecursive', status: 'msStatus', notice: 'msNotice', script: 'vendor/msal-browser.min.js' },
-  google: { tab: 'gdrive', link: 'gLink', btn: 'gLoad', rec: 'gRecursive', status: 'gStatus', notice: 'gNotice', script: 'https://accounts.google.com/gsi/client' },
-  dropbox: { tab: 'dropbox', link: 'dbLink', btn: 'dbLoad', rec: 'dbRecursive', status: 'dbStatus', notice: 'dbNotice' },
 };
 
 function refreshCloudStatus() {
@@ -390,7 +389,13 @@ async function processGif(item, blob, s, opts) {
     const args = [`-O${s.gifLevel}`, '--no-warnings'];
     if (Number(s.gifLossy) > 0) args.push(`--lossy=${s.gifLossy}`);
     if (Number(s.gifColors) < 256) args.push(`--colors ${s.gifColors}`);
-    if (t.w !== src.w || t.h !== src.h) args.push(`--resize ${t.w}x${t.h}`);
+    let bw = src.w, bh = src.h;
+    if (opts.crop.enabled) { // recorte centralizado antes do resize (sem distorcer)
+      const b = cropBox(src.w, src.h, opts.crop.ratio);
+      if (b.w !== src.w || b.h !== src.h) args.push(`--crop ${b.x},${b.y}+${b.w}x${b.h}`);
+      bw = b.w; bh = b.h;
+    }
+    if (t.w !== bw || t.h !== bh) args.push(`--resize ${t.w}x${t.h}`);
     if (s.rotate) args.push({ 90: '--rotate-90', 180: '--rotate-180', 270: '--rotate-270' }[s.rotate]);
     if (s.flipH) args.push('--flip-horizontal');
     if (s.grayscale) args.push('--use-colormap gray');
@@ -441,22 +446,65 @@ async function runAll() {
   const todo = state.items.filter((i) => i.status === 'wait' || i.status === 'err');
   if (!todo.length) return toast(state.items.length ? 'Tudo já foi otimizado. Use "Refazer com novas opções" para processar de novo.' : 'Adicione imagens primeiro');
   state.running = true; $('btnRun').disabled = true;
+  window.DigiFavicon?.progress(0);
   const s = readSettings();
   const n = Math.max(1, Number(s.concurrency) || 2);
   let idx = 0, done = 0;
   const t0 = performance.now();
+
+  // Modo online: SharePoint, SVG e BMP continuam no navegador
+  const online = getMode() === 'online';
+  const onlineTodo = online ? todo.filter(canProcessOnline) : [];
+  const localTodo = online ? todo.filter((i) => !canProcessOnline(i)) : todo;
+  if (online && localTodo.some((i) => i.cloud)) toast('Imagens do SharePoint são processadas no navegador', '');
+
+  const tick = (item) => {
+    done++; $('progBar').style.width = `${(done / todo.length) * 100}%`;
+    window.DigiFavicon?.progress(done / todo.length);
+    renderItem(item); renderSummary();
+  };
+
+  const runOnline = async () => {
+    const jobs = splitJobs(onlineTodo);
+    const opts = workerOpts(s);
+    let j = 0;
+    const lane = async () => {
+      while (j < jobs.length) {
+        const items = jobs[j++];
+        items.forEach((it) => { it.status = 'run'; it.error = ''; it.stage = 'Na fila…'; renderItem(it); });
+        try {
+          const results = await runOnlineJob(items, { settings: s, opts }, (its, txt) => its.forEach((it) => { it.stage = txt; renderItem(it); }));
+          for (const it of items) {
+            const r = results.get(it);
+            try {
+              if (!r.ok) throw new Error(r.error);
+              finishFromWorker(it, r, s, it.file);
+              if (!it.thumb && it.outputs[0]) it.thumb = URL.createObjectURL(it.outputs[0].blob);
+              it.status = 'done';
+            } catch (err) { it.status = 'err'; it.error = err.message || String(err); }
+            it.stage = ''; tick(it);
+          }
+        } catch (err) {
+          console.error(err);
+          for (const it of items) { it.status = 'err'; it.error = err.message || String(err); it.stage = ''; tick(it); }
+        }
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(3, jobs.length) }, lane));
+  };
+
   const next = async () => {
-    while (idx < todo.length) {
-      const item = todo[idx++];
+    while (idx < localTodo.length) {
+      const item = localTodo[idx++];
       item.status = 'run'; item.error = ''; renderItem(item);
       try { await processItem(item, s); item.status = 'done'; }
       catch (err) { console.error(item.name, err); item.status = 'err'; item.error = err.message || String(err); }
-      done++; $('progBar').style.width = `${(done / todo.length) * 100}%`;
-      renderItem(item); renderSummary();
+      tick(item);
     }
   };
-  await Promise.all(Array.from({ length: n }, next));
+  await Promise.all([runOnline(), ...Array.from({ length: n }, next)]);
   state.running = false; $('btnRun').disabled = false;
+  window.DigiFavicon?.done();
   renderQueue();
   const errs = todo.filter((i) => i.status === 'err').length;
   toast(errs ? `Concluído com ${errs} erro(s)` : `Pronto! ${todo.length} imagem(ns) em ${((performance.now() - t0) / 1000).toFixed(1)}s`, errs ? 'err' : 'ok');
@@ -515,7 +563,7 @@ function fillItem(li, item) {
   const multi = item.outputs.length > 1;
   let badge;
   if (item.status === 'wait') badge = '<span class="badge wait">Na fila</span>';
-  else if (item.status === 'run') badge = '<span class="badge run">Processando…</span>';
+  else if (item.status === 'run') badge = `<span class="badge ${item.stage ? 'cloud' : 'run'}">${escapeHtml(item.stage || 'Processando…')}</span>`;
   else if (item.status === 'err') badge = `<span class="badge err" title="${escapeHtml(item.error)}">Erro</span>`;
   else if (item.outputs[0]?.keptOriginal) badge = '<span class="badge wait">Original mantido</span>';
   else if (multi) badge = `<span class="badge good">${item.outputs.length} tamanhos</span>`;
@@ -524,7 +572,7 @@ function fillItem(li, item) {
   const newName = item.status === 'done' ? item.outputs.map((o) => o.finalName).join(', ') : '';
   const dims = item.width ? `${item.width}×${item.height}` : '';
   const outDims = item.status === 'done' && !multi ? ` → ${item.outputs[0].width}×${item.outputs[0].height}` : '';
-  const src = item.cloud ? { microsoft: 'SharePoint', google: 'Drive', dropbox: 'Dropbox' }[item.cloud.provider] : '';
+  const src = item.cloud ? 'SharePoint' : '';
   li.innerHTML = `
     ${item.thumb ? `<img class="thumb" src="${item.thumb}" alt="" loading="lazy">` : `<div class="thumb">${item.srcFormat.toUpperCase()}</div>`}
     <div style="min-width:0">
@@ -687,14 +735,57 @@ function fillCfg() {
   const base = window.OTIMIZADOR_CONFIG || {};
   $('cfgMsClient').value = c.msClient || base.microsoft?.clientId || '';
   $('cfgMsTenant').value = c.msTenant || base.microsoft?.tenantId || 'organizations';
-  $('cfgGClient').value = c.gClient || base.google?.clientId || '';
-  $('cfgDbKey').value = c.dbKey || base.dropbox?.appKey || '';
+  const oc = onlineConfig();
+  $('cfgGhRepo').value = oc.repo; $('cfgGhToken').value = oc.token; $('cfgGhResult').textContent = '';
   $('cfgRedirect').textContent = new URL('auth-callback.html', location.href).href.split('?')[0].split('#')[0];
 }
 $('cfgSave').onclick = () => {
-  store.set('cloud', { msClient: $('cfgMsClient').value.trim(), msTenant: $('cfgMsTenant').value.trim(), gClient: $('cfgGClient').value.trim(), dbKey: $('cfgDbKey').value.trim() });
-  closeModal($('cfgSave')); refreshCloudStatus(); toast('Integrações salvas neste navegador', 'ok');
+  store.set('cloud', { msClient: $('cfgMsClient').value.trim(), msTenant: $('cfgMsTenant').value.trim() });
+  saveOnlineConfig({ repo: $('cfgGhRepo').value.trim(), token: $('cfgGhToken').value.trim() });
+  if (getMode() === 'online' && !isOnlineReady()) applyMode('local', true);
+  closeModal($('cfgSave')); refreshCloudStatus(); toast('Configuração salva neste navegador', 'ok');
 };
+
+/* ======================== Modo de processamento ========================= */
+function getMode() { return segValue('modeSeg') || 'local'; }
+function applyMode(mode, silent) {
+  if (mode === 'online' && !isOnlineReady()) {
+    if (!silent) { toast('Para processar online, informe o repositório e o seu token do GitHub', 'err'); openModal('setModal'); }
+    mode = 'local';
+  }
+  setSeg('modeSeg', mode);
+  store.set('mode', mode);
+  const pill = $('modePill');
+  pill.classList.toggle('online', mode === 'online');
+  pill.querySelector('span').textContent = mode === 'online' ? 'Processamento online' : 'Processamento local';
+  pill.title = mode === 'online'
+    ? 'As imagens são enviadas a um repositório privado do GitHub, processadas e apagadas em seguida. SharePoint continua no navegador.'
+    : 'As imagens são processadas no seu navegador. Nada é enviado para servidores.';
+}
+$$('#modeSeg button').forEach((b) => b.addEventListener('click', () => applyMode(b.dataset.v)));
+
+$('cfgGhTest').onclick = async () => {
+  saveOnlineConfig({ repo: $('cfgGhRepo').value.trim(), token: $('cfgGhToken').value.trim() });
+  const out = $('cfgGhResult'); out.textContent = 'Testando…';
+  try {
+    const r = await testOnline();
+    const warn = [!r.private && 'o repositório é PÚBLICO (as imagens ficariam visíveis enquanto processam)', !r.workflow && 'não encontrei o workflow processar.yml', !r.canPush && 'o token não tem permissão de escrita'].filter(Boolean);
+    out.textContent = warn.length ? `Conectado, mas: ${warn.join('; ')}.` : `Tudo certo: ${r.repo} (privado) pronto para uso.`;
+    out.style.color = warn.length ? 'var(--amber)' : 'var(--green)';
+  } catch (e) { out.textContent = e.message; out.style.color = 'var(--red)'; }
+};
+
+/* =============================== Tema ==================================== */
+$('btnTheme').onclick = () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('otimizador.theme', next); } catch (_) { /* sem storage */ }
+};
+// Segue o sistema enquanto a pessoa não escolher um tema manualmente
+window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', (e) => {
+  let saved = null; try { saved = localStorage.getItem('otimizador.theme'); } catch (_) { /* ok */ }
+  if (!saved) document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+});
 
 /* ============================== Diversos ================================ */
 function toast(msg, kind = '') {
@@ -713,5 +804,6 @@ $('concurrency').value = String(Math.min(4, Math.max(1, (navigator.hardwareConcu
 applySettings(store.get('settings', { ...PRESET_DEFAULTS, ...BUILTIN_PRESETS[0].s, format: 'webp' }));
 if (!segValue('fmtSeg')) setSeg('fmtSeg', 'webp');
 refreshCloudStatus();
+applyMode(store.get('mode', 'local'), true);
 renderQueue();
 window.__otimizador = { state, addEntries, runAll, finalFiles }; // útil para testes

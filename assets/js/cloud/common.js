@@ -9,10 +9,8 @@ export function isImageName(name) {
 
 export function getConfig() {
   const base = window.OTIMIZADOR_CONFIG || {};
-  let local = {};
-  try { local = JSON.parse(localStorage.getItem('otimizador.cloud') || '{}'); } catch (_) { /* sem storage */ }
   return {
-    microsoft: { clientId: local.msClient || base.microsoft?.clientId || '', tenantId: local.msTenant || base.microsoft?.tenantId || 'organizations' },
+    microsoft: { clientId: base.microsoft?.clientId || '', tenantId: base.microsoft?.tenantId || 'organizations' },
   };
 }
 

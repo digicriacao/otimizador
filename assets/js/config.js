@@ -9,8 +9,9 @@ window.OTIMIZADOR_CONFIG = {
     tenantId: '16d33860-3ad3-492d-a8cb-1ef530cbaab8', // ID do diretório (locatário) da Digi
   },
   // Processamento online (GitHub Actions). Repositório PRIVADO que recebe os lotes.
-  // O token não fica aqui: cada pessoa informa o seu na engrenagem do site.
+  // O token do GitHub NÃO fica aqui: ele é um segredo do intermediário (Cloudflare Worker).
   github: {
     repo: 'digicriacao/otimizador-processamento',
+    proxy: 'https://otimizador-digi.criacao01.workers.dev', // intermediário (Cloudflare Worker)
   },
 };

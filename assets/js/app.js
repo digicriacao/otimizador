@@ -6,7 +6,7 @@ import { computeTargets, cropBox } from './dims.js';
 import { zipSync } from '../../vendor/fflate.js';
 import { loadScript, isImageName } from './cloud/common.js';
 import { microsoft } from './cloud/microsoft.js';
-import { onlineConfig, saveOnlineConfig, isOnlineReady, canProcessOnline, splitJobs, runOnlineJob, testOnline } from './online.js';
+import { isOnlineReady, canProcessOnline, splitJobs, runOnlineJob } from './online.js';
 
 const $ = (id) => document.getElementById(id);
 const $$ = (sel, el = document) => [...el.querySelectorAll(sel)];
@@ -271,7 +271,7 @@ for (const [key, ui] of Object.entries(CLOUD_UI)) {
   const p = PROVIDERS[key];
   $(ui.btn).onclick = async () => {
     const link = $(ui.link).value.trim();
-    if (!p.isConfigured()) { toast(`Configure a integração do ${p.label} primeiro (ícone de engrenagem)`, 'err'); return openModal('setModal'); }
+    if (!p.isConfigured()) return toast(`A integração do ${p.label} não está configurada (assets/js/config.js)`, 'err');
     if (!link) return toast('Cole o link da pasta', 'err');
     const btn = $(ui.btn); const old = btn.textContent;
     btn.disabled = true; btn.textContent = 'Conectando…';
@@ -722,35 +722,17 @@ function setSplit(p) {
 })();
 
 /* ============================== Modais ================================== */
-function openModal(id) { $(id).classList.remove('hidden'); if (id === 'setModal') fillCfg(); }
+function openModal(id) { $(id).classList.remove('hidden'); }
 function closeModal(el) { el.closest('.modal').classList.add('hidden'); }
 $$('[data-close]').forEach((b) => b.addEventListener('click', () => closeModal(b)));
 $$('.modal').forEach((m) => m.addEventListener('click', (e) => { if (e.target === m) m.classList.add('hidden'); }));
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $$('.modal').forEach((m) => m.classList.add('hidden')); });
-$('btnSettings').onclick = () => openModal('setModal');
-document.addEventListener('click', (e) => { if (e.target.closest('[data-open-settings]')) { e.preventDefault(); openModal('setModal'); } });
-
-function fillCfg() {
-  const c = store.get('cloud', {});
-  const base = window.OTIMIZADOR_CONFIG || {};
-  $('cfgMsClient').value = c.msClient || base.microsoft?.clientId || '';
-  $('cfgMsTenant').value = c.msTenant || base.microsoft?.tenantId || 'organizations';
-  const oc = onlineConfig();
-  $('cfgGhRepo').value = oc.repo; $('cfgGhToken').value = oc.token; $('cfgGhResult').textContent = '';
-  $('cfgRedirect').textContent = new URL('auth-callback.html', location.href).href.split('?')[0].split('#')[0];
-}
-$('cfgSave').onclick = () => {
-  store.set('cloud', { msClient: $('cfgMsClient').value.trim(), msTenant: $('cfgMsTenant').value.trim() });
-  saveOnlineConfig({ repo: $('cfgGhRepo').value.trim(), token: $('cfgGhToken').value.trim() });
-  if (getMode() === 'online' && !isOnlineReady()) applyMode('local', true);
-  closeModal($('cfgSave')); refreshCloudStatus(); toast('Configuração salva neste navegador', 'ok');
-};
 
 /* ======================== Modo de processamento ========================= */
 function getMode() { return segValue('modeSeg') || 'local'; }
 function applyMode(mode, silent) {
   if (mode === 'online' && !isOnlineReady()) {
-    if (!silent) { toast('Para processar online, informe o repositório e o seu token do GitHub', 'err'); openModal('setModal'); }
+    if (!silent) toast('O processamento online ainda não foi configurado. Veja o README (seção Processamento online).', 'err');
     mode = 'local';
   }
   setSeg('modeSeg', mode);
@@ -763,17 +745,6 @@ function applyMode(mode, silent) {
     : 'As imagens são processadas no seu navegador. Nada é enviado para servidores.';
 }
 $$('#modeSeg button').forEach((b) => b.addEventListener('click', () => applyMode(b.dataset.v)));
-
-$('cfgGhTest').onclick = async () => {
-  saveOnlineConfig({ repo: $('cfgGhRepo').value.trim(), token: $('cfgGhToken').value.trim() });
-  const out = $('cfgGhResult'); out.textContent = 'Testando…';
-  try {
-    const r = await testOnline();
-    const warn = [!r.private && 'o repositório é PÚBLICO (as imagens ficariam visíveis enquanto processam)', !r.workflow && 'não encontrei o workflow processar.yml', !r.canPush && 'o token não tem permissão de escrita'].filter(Boolean);
-    out.textContent = warn.length ? `Conectado, mas: ${warn.join('; ')}.` : `Tudo certo: ${r.repo} (privado) pronto para uso.`;
-    out.style.color = warn.length ? 'var(--amber)' : 'var(--green)';
-  } catch (e) { out.textContent = e.message; out.style.color = 'var(--red)'; }
-};
 
 /* =============================== Tema ==================================== */
 $('btnTheme').onclick = () => {
@@ -805,5 +776,7 @@ applySettings(store.get('settings', { ...PRESET_DEFAULTS, ...BUILTIN_PRESETS[0].
 if (!segValue('fmtSeg')) setSeg('fmtSeg', 'webp');
 refreshCloudStatus();
 applyMode(store.get('mode', 'local'), true);
+// Remove dados de versões anteriores (token e IDs salvos no navegador)
+try { localStorage.removeItem('otimizador.online'); localStorage.removeItem('otimizador.cloud'); } catch (_) { /* ok */ }
 renderQueue();
 window.__otimizador = { state, addEntries, runAll, finalFiles }; // útil para testes

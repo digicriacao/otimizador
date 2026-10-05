@@ -7,24 +7,17 @@
    ========================================================================= */
 import { zipSync, unzipSync, strToU8, strFromU8 } from '../../vendor/fflate.js';
 
-const API = 'https://api.github.com';
 const MAX_JOB_BYTES = 40 * 1024 * 1024; // por lote; lotes maiores são divididos
 const MAX_JOB_ITEMS = 150;
 const POLL_MS = 4000;
 const TIMEOUT_MS = 35 * 60 * 1000;
 
 export function onlineConfig() {
-  const base = window.OTIMIZADOR_CONFIG?.github || {};
-  let local = {};
-  try { local = JSON.parse(localStorage.getItem('otimizador.online') || '{}'); } catch (_) { /* sem storage */ }
-  return { repo: (local.repo || base.repo || '').trim(), token: (local.token || '').trim() };
+  const c = window.OTIMIZADOR_CONFIG?.github || {};
+  return { repo: (c.repo || '').trim(), proxy: (c.proxy || '').trim().replace(/\/+$/, '') };
 }
 
-export function saveOnlineConfig({ repo, token }) {
-  try { localStorage.setItem('otimizador.online', JSON.stringify({ repo, token })); } catch (_) { /* ok */ }
-}
-
-export const isOnlineReady = () => { const c = onlineConfig(); return !!(c.repo && c.token); };
+export const isOnlineReady = () => { const c = onlineConfig(); return !!(c.repo && c.proxy); };
 
 /** Itens que podem ir para a nuvem: SharePoint fica sempre no navegador. */
 export const canProcessOnline = (item) => !item.cloud && !['svg', 'bmp'].includes(item.srcFormat);
@@ -42,13 +35,13 @@ export function splitJobs(items) {
 }
 
 function client() {
-  const { repo, token } = onlineConfig();
-  if (!repo || !token) throw new Error('Configure o processamento online (engrenagem no topo)');
+  // As chamadas passam pelo intermediário (Cloudflare Worker), que guarda o token
+  const { repo, proxy } = onlineConfig();
+  if (!repo || !proxy) throw new Error('O processamento online ainda não foi configurado (assets/js/config.js)');
   const call = async (method, path, body, accept) => {
-    const res = await fetch(API + path.replace('{repo}', repo), {
+    const res = await fetch(proxy + path.replace('{repo}', repo), {
       method,
       headers: {
-        Authorization: `Bearer ${token}`, 'X-GitHub-Api-Version': '2022-11-28',
         Accept: accept || 'application/vnd.github+json',
         ...(body ? { 'Content-Type': 'application/json' } : {}),
       },
@@ -56,9 +49,10 @@ function client() {
     });
     if (!res.ok) {
       let msg = ''; try { msg = (await res.json()).message; } catch (_) { /* ok */ }
-      if (res.status === 401) throw new Error('Token do GitHub inválido ou expirado');
+      if (res.status === 401) throw new Error('O token do GitHub guardado no intermediário é inválido ou expirou');
       if (res.status === 404) throw new Error(`Repositório "${repo}" não encontrado ou o token não tem acesso a ele`);
-      if (res.status === 403 || res.status === 429) throw new Error(`O GitHub recusou a operação: ${msg || res.status}`);
+      if (res.status === 403 || res.status === 429) throw new Error(`Operação recusada: ${msg || res.status}`);
+      if (res.status >= 500 && msg) throw new Error(msg);
       throw new Error(`GitHub ${res.status}: ${msg}`);
     }
     if (res.status === 204) return null;
@@ -148,14 +142,4 @@ export async function runOnlineJob(items, { settings, opts }, onStage) {
     // 5. Limpa o branch (as imagens não ficam guardadas no GitHub)
     call('DELETE', `/repos/{repo}/git/refs/heads/${branch}`).catch(() => {});
   }
-}
-
-/** Testa token e repositório (usado no botão "Testar conexão"). */
-export async function testOnline() {
-  const { call, repo } = client();
-  const info = await call('GET', '/repos/{repo}');
-  if (!info.private) console.warn('Atenção: o repositório de processamento é público');
-  const wf = await call('GET', '/repos/{repo}/actions/workflows');
-  const ok = wf.workflows?.some((w) => w.path.endsWith('processar.yml'));
-  return { repo, private: info.private, workflow: !!ok, canPush: !!info.permissions?.push };
 }

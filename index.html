@@ -55,9 +55,6 @@
       <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
     </button>
-    <button class="icon-btn" id="btnSettings" title="Integrações e configurações" aria-label="Configurações">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </button>
   </div>
 </header>
 
@@ -91,7 +88,7 @@
       <div class="tab-panel hidden" data-panel="sharepoint">
         <div class="cloud-form">
           <div class="cloud-status" id="msStatus"><span class="dot"></span><span>Não conectado</span></div>
-          <div class="notice hidden" id="msNotice">A integração com o SharePoint ainda não foi configurada. Informe o <b>Client ID</b> em <a href="#" data-open-settings>Configurações</a> (passo a passo no README).</div>
+          <div class="notice hidden" id="msNotice">A integração com o SharePoint não está configurada. Preencha o <b>Client ID</b> em <code class="mono">assets/js/config.js</code> (passo a passo no README).</div>
           <label class="label">Link da pasta (SharePoint ou OneDrive)</label>
           <div class="cloud-row">
             <input type="url" id="msLink" placeholder="https://suaempresa.sharepoint.com/:f:/s/Marketing/...">
@@ -315,26 +312,6 @@
         <span class="tag l">Original</span><span class="tag r">Otimizada</span>
       </div>
       <div class="compare-meta"><span id="cmpMetaL"></span><span id="cmpMetaR"></span></div>
-    </div>
-  </div>
-</div>
-
-<!-- Configurações / integrações -->
-<div class="modal hidden" id="setModal">
-  <div class="modal-box narrow">
-    <div class="modal-head"><h3>Integrações</h3><button class="icon-btn" data-close aria-label="Fechar">✕</button></div>
-    <div class="modal-body">
-      <p class="cloud-hint" style="margin-bottom:16px">A integração já vem configurada para a Digi pelo arquivo <code class="mono">assets/js/config.js</code>. Só altere aqui se quiser usar outro app neste navegador. Os IDs são públicos, não são senhas.</p>
-      <div class="field"><label>Microsoft (SharePoint / OneDrive) · Client ID</label><input type="text" id="cfgMsClient" placeholder="00000000-0000-0000-0000-000000000000"></div>
-      <div class="field"><label>Microsoft · Tenant ID <small>ou "organizations"</small></label><input type="text" id="cfgMsTenant" placeholder="organizations"></div>
-      <p class="help">Endereço de retorno para cadastrar no app (Redirect URI, plataforma SPA): <b class="mono" id="cfgRedirect"></b></p>
-
-      <h4 class="modal-sub">Processamento online (GitHub)</h4>
-      <p class="cloud-hint" style="margin-bottom:12px">Cada pessoa usa o próprio token do GitHub, que fica salvo só neste navegador. Imagens do SharePoint são sempre processadas no navegador.</p>
-      <div class="field"><label>Repositório de processamento <small>privado</small></label><input type="text" id="cfgGhRepo" placeholder="digicriacao/otimizador-processamento"></div>
-      <div class="field"><label>Token do GitHub <small>fine-grained, só esse repositório</small></label><input type="password" id="cfgGhToken" placeholder="github_pat_…" autocomplete="off"></div>
-      <div style="display:flex;gap:8px;align-items:center;margin:-4px 0 16px;flex-wrap:wrap"><button class="btn btn-sm" id="cfgGhTest">Testar conexão</button><span class="cloud-hint" id="cfgGhResult"></span></div>
-      <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" data-close>Cancelar</button><button class="btn btn-primary" id="cfgSave">Salvar</button></div>
     </div>
   </div>
 </div>

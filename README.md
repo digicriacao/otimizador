@@ -38,7 +38,7 @@ public/
   og-image.png          imagem de compartilhamento (1200×630)
 assets/
   css/styles.css        identidade visual: cores do tema claro no topo, tema escuro no fim
-  js/config.js          IDs do app do SharePoint (já preenchidos)
+  js/config.js          IDs do SharePoint e endereço do intermediário do modo Online
   js/favicon.js         animação do favicon
   js/online.js          envio e acompanhamento do processamento online
   js/app.js             fila, opções, downloads e envio
@@ -105,21 +105,30 @@ As opções, os nomes, o ZIP, o comparador e o código `<picture>` funcionam igu
 3. Ainda no repositório privado, vá em **Settings → Actions → General** e confira duas opções:
    - *Actions permissions* deve permitir as actions.
    - Em *Workflow permissions*, marque **Read and write permissions**.
-4. **Cada pessoa cria o próprio token** em [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new):
-   - Tipo: **Fine-grained**.
-   - *Resource owner*: `digicriacao`.
+4. **Crie um token do GitHub** (um só, para toda a equipe), logado na conta `digicriacao`, em [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new):
+   - Tipo: **Fine-grained**. *Resource owner*: `digicriacao`.
    - *Repository access*: **Only select repositories → otimizador-processamento**.
    - *Permissions → Repository*: **Contents: Read and write** e **Actions: Read-only**.
-   - Validade: até 1 ano. O GitHub avisa por e-mail antes de expirar.
-5. Na plataforma, clique na **engrenagem**, cole o token e use **Testar conexão**. O token fica salvo só naquele navegador e nunca vai para o código.
+   - Validade: a mais longa disponível. Anote a data de vencimento.
+5. **Publique o intermediário no Cloudflare** (grátis, sem cartão). O token fica guardado nele como segredo e nunca vai para o site:
+   1. Crie uma conta em [dash.cloudflare.com](https://dash.cloudflare.com/sign-up).
+   2. Vá em **Workers & Pages → Create → Create Worker**, dê o nome `otimizador-digi` e clique em **Deploy**.
+   3. Clique em **Edit code**, apague o código de exemplo, cole o conteúdo de `cloudflare-worker/worker.js` (do ZIP de processamento) e clique em **Deploy**.
+   4. Em **Settings → Variables and Secrets → Add**, escolha o tipo **Secret**, com nome `GITHUB_TOKEN` e o token como valor. Salve com **Deploy**.
+   5. Copie o endereço do Worker (algo como `https://otimizador-digi.SUA-CONTA.workers.dev`).
+6. **Cole o endereço** em `assets/js/config.js`, no campo `github.proxy`, e envie o arquivo para o repositório do site. Pronto: o botão **Online** passa a funcionar para todo mundo, sem configurar nada.
 
-O token precisa ser de alguém com acesso ao repositório privado. Para dar acesso a mais pessoas, adicione-as como colaboradoras em *Settings → Collaborators*.
+**Por que um intermediário:** tudo o que está no site (inclusive o `config.js`) pode ser lido por qualquer pessoa no navegador, mesmo com o repositório privado. Além disso, o GitHub cancela sozinho tokens encontrados em repositórios públicos. O Worker guarda o token e só aceita as operações do otimizador: criar e apagar lotes `jobs/*`, acompanhar o processamento e baixar o resultado. Ele não altera nenhum código e só aceita pedidos vindos do endereço do site.
+
+**Quando o token vencer ou precisar ser trocado:** gere outro e substitua o segredo `GITHUB_TOKEN` no Worker. Não é preciso mexer no site.
 
 ### Custos e limites
 
 - Repositórios privados no plano gratuito do GitHub têm **2.000 minutos de Actions por mês**. Cada lote usa cerca de 1 minuto de preparação mais o tempo de processamento. Fotos comuns levam menos de 1 s cada; AVIF demora mais.
+- O Cloudflare Workers gratuito permite 100 mil pedidos por dia; cada lote usa algumas dezenas.
 - Lotes acima de ~40 MB ou de 150 imagens são divididos automaticamente, e até 3 lotes rodam ao mesmo tempo.
 - O resultado de cada lote precisa ter menos de 100 MB (limite da API do GitHub).
+- O endereço do Worker é público. Fora do site ele recusa os pedidos, mas alguém determinado poderia usar o processamento e gastar minutos do mês. No plano gratuito isso nunca vira cobrança: no pior caso, o modo Online para até o mês virar (o modo No navegador continua funcionando).
 - Entre o clique e o início do processamento costuma haver de 20 a 60 s (fila do GitHub + instalação). Para poucas imagens, o modo local é mais rápido. O online compensa em lotes grandes, em computadores mais fracos e com HEIC/AVIF.
 - A lógica de dimensões está em dois lugares: `assets/js/dims.js` (site) e `processar/dims.js` (repositório privado). Se mudar uma, copie para a outra.
 

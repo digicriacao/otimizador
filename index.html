@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Otimizador de Imagens · Digi</title>
+<meta name="description" content="Converta, redimensione e otimize imagens em lote, direto no navegador.">
+<link rel="icon" type="image/png" href="logo-rosa.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <img class="logo" src="logo-rosa.png" alt="digi" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-fallback',textContent:'digi'}))">
+    <div class="divider"></div>
+    <div class="brand-title">Otimizador <span>de imagens</span></div>
+    <div class="spacer"></div>
+    <span class="privacy-pill" title="As imagens são processadas no seu navegador. Nada é enviado para servidores."><i></i>Processamento local</span>
+    <button class="icon-btn" id="btnSettings" title="Integrações e configurações" aria-label="Configurações">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- ============================ COLUNA PRINCIPAL ============================ -->
+  <section>
+    <div class="card">
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="local"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>Arquivos</button>
+        <button class="tab" data-tab="sharepoint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>SharePoint / OneDrive</button>
+        <button class="tab" data-tab="gdrive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3h8l6 10-4 7H6l-4-7z"/><path d="M8 3l6 10h8M2 13h12l-4 7"/></svg>Google Drive</button>
+        <button class="tab" data-tab="dropbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3l5 3.2L7 9.5 2 6.2zM17 3l5 3.2-5 3.3-5-3.3zM2 12.8l5-3.3 5 3.3-5 3.2zM22 12.8l-5-3.3-5 3.3 5 3.2zM7 17.3l5 3.2 5-3.2"/></svg>Dropbox</button>
+        <button class="tab" data-tab="url"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Links</button>
+      </nav>
+
+      <!-- Arquivos locais -->
+      <div class="tab-panel" data-panel="local">
+        <label class="drop" id="drop">
+          <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          <strong>Arraste imagens ou pastas aqui</strong>
+          <p>ou clique para escolher · também dá para colar com Ctrl+V</p>
+          <div class="formats">JPG · PNG · WebP · AVIF · GIF · SVG · HEIC · BMP</div>
+          <input type="file" id="fileInput" multiple accept="image/*,.heic,.heif,.svg,.avif" hidden>
+        </label>
+        <div class="source-actions">
+          <button class="btn btn-sm" id="btnFolder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Selecionar pasta inteira</button>
+          <input type="file" id="folderInput" webkitdirectory multiple hidden>
+          <span class="cloud-hint" style="align-self:center">Dica: pastas do SharePoint sincronizadas pelo OneDrive no seu computador funcionam aqui direto, sem configurar nada.</span>
+        </div>
+      </div>
+
+      <!-- SharePoint / OneDrive -->
+      <div class="tab-panel hidden" data-panel="sharepoint">
+        <div class="cloud-form">
+          <div class="cloud-status" id="msStatus"><span class="dot"></span><span>Não conectado</span></div>
+          <div class="notice hidden" id="msNotice">Para usar o SharePoint é preciso cadastrar o app no Microsoft Entra (gratuito) e colar o <b>Client ID</b> em <a href="#" data-open-settings>Configurações</a>. O passo a passo está no README.</div>
+          <label class="label">Link da pasta (SharePoint ou OneDrive)</label>
+          <div class="cloud-row">
+            <input type="url" id="msLink" placeholder="https://suaempresa.sharepoint.com/:f:/s/Marketing/...">
+            <button class="btn btn-primary" id="msLoad">Carregar pasta</button>
+          </div>
+          <label class="check"><input type="checkbox" id="msRecursive" checked><span>Incluir subpastas</span></label>
+          <p class="cloud-hint">Cole o link de compartilhamento da pasta (botão "Copiar link" no SharePoint). Depois de otimizar, use <b>Enviar para a nuvem</b> para salvar o resultado de volta.</p>
+        </div>
+      </div>
+
+      <!-- Google Drive -->
+      <div class="tab-panel hidden" data-panel="gdrive">
+        <div class="cloud-form">
+          <div class="cloud-status" id="gStatus"><span class="dot"></span><span>Não conectado</span></div>
+          <div class="notice hidden" id="gNotice">Para usar o Google Drive é preciso criar um <b>OAuth Client ID</b> no Google Cloud (gratuito) e colar em <a href="#" data-open-settings>Configurações</a>. O passo a passo está no README.</div>
+          <label class="label">Link da pasta do Google Drive</label>
+          <div class="cloud-row">
+            <input type="url" id="gLink" placeholder="https://drive.google.com/drive/folders/...">
+            <button class="btn btn-primary" id="gLoad">Carregar pasta</button>
+          </div>
+          <label class="check"><input type="checkbox" id="gRecursive" checked><span>Incluir subpastas</span></label>
+        </div>
+      </div>
+
+      <!-- Dropbox -->
+      <div class="tab-panel hidden" data-panel="dropbox">
+        <div class="cloud-form">
+          <div class="cloud-status" id="dbStatus"><span class="dot"></span><span>Não conectado</span></div>
+          <div class="notice hidden" id="dbNotice">Para usar o Dropbox é preciso criar um app no Dropbox (gratuito) e colar o <b>App key</b> em <a href="#" data-open-settings>Configurações</a>. O passo a passo está no README.</div>
+          <label class="label">Link compartilhado da pasta do Dropbox</label>
+          <div class="cloud-row">
+            <input type="url" id="dbLink" placeholder="https://www.dropbox.com/scl/fo/...">
+            <button class="btn btn-primary" id="dbLoad">Carregar pasta</button>
+          </div>
+          <label class="check"><input type="checkbox" id="dbRecursive" checked><span>Incluir subpastas</span></label>
+        </div>
+      </div>
+
+      <!-- Links diretos -->
+      <div class="tab-panel hidden" data-panel="url">
+        <div class="cloud-form">
+          <label class="label">Links diretos de imagens <small>um por linha</small></label>
+          <textarea id="urlList" rows="5" placeholder="https://site.com/banner.jpg&#10;https://cdn.site.com/foto.png"></textarea>
+          <div><button class="btn btn-primary" id="urlLoad">Adicionar à fila</button></div>
+          <p class="cloud-hint">Funciona com servidores que permitem download por outros sites (CORS). Se um link falhar, baixe a imagem e arraste para a aba Arquivos.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fila -->
+    <div class="card queue-card">
+      <div class="queue-head">
+        <h2>Fila <span class="count" id="qCount">0 imagens</span></h2>
+        <div class="spacer"></div>
+        <button class="btn btn-ghost btn-sm" id="btnClear">Limpar fila</button>
+        <button class="btn btn-primary" id="btnRun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>Otimizar tudo</button>
+      </div>
+      <div class="progress"><i id="progBar"></i></div>
+      <div class="summary">
+        <div><small>Original</small><strong id="sumBefore">—</strong></div>
+        <div><small>Otimizado</small><strong id="sumAfter">—</strong></div>
+        <div class="saved"><small>Economia</small><strong id="sumSaved">—</strong></div>
+        <div><small>Arquivos gerados</small><strong id="sumFiles">—</strong></div>
+      </div>
+      <ul class="queue" id="queue"><li class="empty">Adicione imagens para começar.</li></ul>
+      <div class="bottom-actions">
+        <button class="btn" id="btnZip" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Baixar ZIP</button>
+        <button class="btn" id="btnSaveDir" disabled title="Chrome e Edge: grava direto numa pasta do computador">Salvar em pasta</button>
+        <button class="btn" id="btnUpload" disabled>Enviar para a nuvem</button>
+        <button class="btn btn-ghost" id="btnSrcset" disabled>Copiar código &lt;picture&gt;</button>
+        <div class="spacer"></div>
+        <button class="btn btn-ghost btn-sm" id="btnReset" disabled>Refazer com novas opções</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ PAINEL DE OPÇÕES ============================ -->
+  <aside class="card settings" id="settingsPanel">
+    <div class="card-pad" style="padding-bottom:8px">
+      <h2 class="section">Predefinições</h2>
+      <div class="chips" id="presets"></div>
+      <div style="margin-top:10px"><button class="btn btn-ghost btn-sm" id="btnSavePreset" style="padding-left:0">+ Salvar configuração atual</button></div>
+    </div>
+
+    <details class="group" open>
+      <summary><span class="num">1</span>Formato e qualidade<span class="sum-val" id="sumFormat"></span></summary>
+      <div class="group-body">
+        <div class="field">
+          <label>Converter para</label>
+          <div class="seg" id="fmtSeg">
+            <button data-v="original">Original</button><button data-v="jpeg">JPG</button><button data-v="png">PNG</button>
+            <button data-v="webp">WebP</button><button data-v="avif">AVIF</button><button data-v="auto" title="Testa e escolhe o menor arquivo">Auto</button>
+          </div>
+        </div>
+        <div class="field" id="fQuality">
+          <label>Qualidade <span class="range-val" id="qualityVal">80</span></label>
+          <input type="range" id="quality" min="1" max="100" value="80">
+        </div>
+        <label class="check" id="fLossless"><input type="checkbox" id="lossless"><span>Sem perdas (lossless)<small>Qualidade idêntica ao original; arquivos maiores.</small></span></label>
+        <div class="field" id="fPngColors">
+          <label>Cores do PNG <small>reduzir = bem mais leve</small></label>
+          <select id="pngColors">
+            <option value="0">Todas (sem perdas)</option><option value="256" selected>256 cores (recomendado)</option>
+            <option value="128">128 cores</option><option value="64">64 cores</option><option value="32">32 cores</option><option value="16">16 cores</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tamanho máximo por arquivo <small>opcional</small></label>
+          <div class="cloud-row"><input type="number" id="targetKB" min="0" placeholder="Ex.: 200"><span style="align-self:center;color:var(--ink-soft)">KB</span></div>
+        </div>
+        <p class="help">Com tamanho máximo, a qualidade é ajustada sozinha até caber.</p>
+        <div class="row2">
+          <div class="field"><label>Fundo p/ transparência</label><input type="text" id="background" value="#ffffff"></div>
+          <div class="field"><label>Reamostragem</label>
+            <select id="resampler"><option value="lanczos3">Lanczos (nítida)</option><option value="mitchell">Mitchell (suave)</option><option value="catrom">Catmull-Rom</option><option value="triangle">Bilinear</option></select>
+          </div>
+        </div>
+        <label class="check"><input type="checkbox" id="progressive" checked><span>JPG progressivo<small>Carrega em camadas no site.</small></span></label>
+      </div>
+    </details>
+
+    <details class="group" open>
+      <summary><span class="num">2</span>Redimensionar<span class="sum-val" id="sumResize"></span></summary>
+      <div class="group-body">
+        <div class="field">
+          <label>Modo <small>sempre mantém a proporção</small></label>
+          <select id="resizeMode">
+            <option value="none">Manter tamanho original</option>
+            <option value="width">Largura fixa</option>
+            <option value="height">Altura fixa</option>
+            <option value="longest">Lado maior</option>
+            <option value="fit">Caber em uma caixa (L × A)</option>
+            <option value="percent">Porcentagem</option>
+            <option value="cover">Preencher L × A e cortar o excesso</option>
+            <option value="responsive">Várias larguras (responsivo)</option>
+          </select>
+        </div>
+        <div class="row2" id="fWH">
+          <div class="field" id="fW"><label>Largura (px)</label><input type="number" id="rW" value="1920" min="1"></div>
+          <div class="field" id="fH"><label>Altura (px)</label><input type="number" id="rH" value="1080" min="1"></div>
+        </div>
+        <div class="field hidden" id="fPct"><label>Porcentagem <span class="range-val" id="pctVal">50%</span></label><input type="range" id="rPct" min="5" max="100" value="50"></div>
+        <div class="field hidden" id="fSizes"><label>Larguras <small>separadas por vírgula</small></label><input type="text" id="rSizes" value="480, 960, 1440, 1920"></div>
+        <div class="field">
+          <label>Recortar proporção antes <small>centralizado</small></label>
+          <select id="cropRatio">
+            <option value="0">Não recortar</option><option value="1">1:1 quadrado</option><option value="0.8">4:5 feed</option>
+            <option value="1.7778">16:9 paisagem</option><option value="0.5625">9:16 stories</option><option value="1.5">3:2 foto</option><option value="1.3333">4:3</option><option value="1.91">1,91:1 link / OG</option>
+          </select>
+        </div>
+        <label class="check"><input type="checkbox" id="noUpscale" checked><span>Não aumentar imagens pequenas</span></label>
+      </div>
+    </details>
+
+    <details class="group" open>
+      <summary><span class="num">3</span>Nome dos arquivos<span class="sum-val" id="sumName"></span></summary>
+      <div class="group-body">
+        <div class="field">
+          <label>Renomear</label>
+          <select id="nameMode">
+            <option value="keep">Manter o mesmo nome</option>
+            <option value="prefix">Adicionar prefixo</option>
+            <option value="suffix">Adicionar sufixo</option>
+            <option value="both">Prefixo e sufixo</option>
+            <option value="sequence">Sequência numerada</option>
+            <option value="template">Modelo personalizado</option>
+          </select>
+        </div>
+        <div class="row2" id="fAffix">
+          <div class="field" id="fPrefix"><label>Prefixo</label><input type="text" id="prefix" placeholder="site_"></div>
+          <div class="field" id="fSuffix"><label>Sufixo</label><input type="text" id="suffix" placeholder="_otimizada"></div>
+        </div>
+        <div class="row2 hidden" id="fSeq">
+          <div class="field"><label>Nome base</label><input type="text" id="seqBase" value="imagem"></div>
+          <div class="field"><label>Começar em</label><input type="number" id="seqStart" value="1" min="0"></div>
+        </div>
+        <div class="field hidden" id="fTemplate">
+          <label>Modelo</label>
+          <input type="text" id="template" value="{nome}-{largura}x{altura}">
+          <div class="tokens" id="tokens">
+            <code>{nome}</code><code>{n}</code><code>{largura}</code><code>{altura}</code><code>{dim}</code><code>{formato}</code><code>{qualidade}</code><code>{data}</code><code>{pasta}</code>
+          </div>
+        </div>
+        <label class="check"><input type="checkbox" id="addDims"><span>Adicionar dimensões ao fim<small>Ex.: banner<b>-1920x1080</b>.webp</small></span></label>
+        <label class="check"><input type="checkbox" id="addFmt"><span>Adicionar formato ao fim<small>Ex.: banner<b>-webp</b>.webp</small></span></label>
+        <label class="check"><input type="checkbox" id="slug" checked><span>Nome amigável para web<small>Minúsculas, sem acentos e sem espaços.</small></span></label>
+        <div class="field" style="margin-top:6px"><label>Prévia</label><div class="name-preview" id="namePreview"></div></div>
+      </div>
+    </details>
+
+    <details class="group">
+      <summary><span class="num">4</span>GIFs<span class="sum-val" id="sumGif"></span></summary>
+      <div class="group-body">
+        <label class="check"><input type="checkbox" id="gifKeep" checked><span>Manter GIFs animados como GIF<small>Desmarcado, o GIF segue o formato escolhido acima (só o 1º quadro).</small></span></label>
+        <div class="field"><label>Compressão com perdas <span class="range-val" id="gifLossyVal">60</span></label><input type="range" id="gifLossy" min="0" max="200" value="60"></div>
+        <p class="help">0 = sem perdas · 30–80 equilíbrio · acima de 120 aparece ruído.</p>
+        <div class="row2">
+          <div class="field"><label>Cores</label><select id="gifColors"><option value="256">256</option><option value="128" selected>128</option><option value="64">64</option><option value="32">32</option></select></div>
+          <div class="field"><label>Otimização</label><select id="gifLevel"><option value="1">Rápida (-O1)</option><option value="2" selected>Normal (-O2)</option><option value="3">Máxima (-O3)</option></select></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="group">
+      <summary><span class="num">5</span>Ajustes<span class="sum-val" id="sumAdjust"></span></summary>
+      <div class="group-body">
+        <div class="field"><label>Girar</label>
+          <div class="seg" id="rotSeg"><button data-v="0" class="active">0°</button><button data-v="90">90°</button><button data-v="180">180°</button><button data-v="270">270°</button></div>
+        </div>
+        <label class="check"><input type="checkbox" id="flipH"><span>Espelhar horizontalmente</span></label>
+        <label class="check"><input type="checkbox" id="grayscale"><span>Preto e branco</span></label>
+        <label class="check"><input type="checkbox" id="sharpen"><span>Nitidez após reduzir</span></label>
+        <p class="help">Metadados (EXIF, GPS, câmera) são sempre removidos: deixa o arquivo mais leve e protege a privacidade. A rotação do celular é aplicada antes.</p>
+      </div>
+    </details>
+
+    <details class="group">
+      <summary><span class="num">6</span>Avançado</summary>
+      <div class="group-body">
+        <label class="check"><input type="checkbox" id="skipLarger" checked><span>Manter o original se o resultado ficar maior<small>Só quando formato e tamanho não mudam.</small></span></label>
+        <label class="check"><input type="checkbox" id="svgOptimize" checked><span>Otimizar SVG como vetor<small>Quando o formato for "Original", o SVG é limpo (SVGO) em vez de virar imagem.</small></span></label>
+        <label class="check"><input type="checkbox" id="keepFolders" checked><span>Manter a estrutura de pastas no ZIP</span></label>
+        <div class="field"><label>Imagens em paralelo</label><select id="concurrency"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="6">6</option></select></div>
+        <div class="field"><label>Ao enviar para a nuvem</label>
+          <select id="uploadMode"><option value="subfolder">Criar subpasta com o resultado</option><option value="same">Salvar na mesma pasta (nomes diferentes)</option></select>
+        </div>
+        <div class="field" id="fSubfolder"><label>Nome da subpasta</label><input type="text" id="subfolder" value="otimizadas"></div>
+      </div>
+    </details>
+  </aside>
+</main>
+
+<footer class="foot">Feito pela Digi · Codecs MozJPEG, OxiPNG, libwebp, libavif (Squoosh) e Gifsicle rodando em WebAssembly no seu navegador.</footer>
+
+<!-- Comparar antes/depois -->
+<div class="modal hidden" id="cmpModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="cmpTitle">Comparar</h3><button class="icon-btn" data-close aria-label="Fechar">✕</button></div>
+    <div class="modal-body">
+      <div class="compare" id="cmp">
+        <img id="cmpBefore" alt="Original">
+        <div class="after-wrap" id="cmpAfterWrap"><img id="cmpAfter" alt="Otimizada"></div>
+        <div class="handle" id="cmpHandle"></div>
+        <span class="tag l">Original</span><span class="tag r">Otimizada</span>
+      </div>
+      <div class="compare-meta"><span id="cmpMetaL"></span><span id="cmpMetaR"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Configurações / integrações -->
+<div class="modal hidden" id="setModal">
+  <div class="modal-box narrow">
+    <div class="modal-head"><h3>Integrações com nuvem</h3><button class="icon-btn" data-close aria-label="Fechar">✕</button></div>
+    <div class="modal-body">
+      <p class="cloud-hint" style="margin-bottom:16px">Os IDs abaixo são públicos (não são senhas) e ficam salvos só neste navegador. Para valer para toda a equipe, preencha também o arquivo <code class="mono">assets/js/config.js</code> no GitHub.</p>
+      <div class="field"><label>Microsoft (SharePoint / OneDrive) · Client ID</label><input type="text" id="cfgMsClient" placeholder="00000000-0000-0000-0000-000000000000"></div>
+      <div class="field"><label>Microsoft · Tenant ID <small>ou "organizations"</small></label><input type="text" id="cfgMsTenant" placeholder="organizations"></div>
+      <div class="field"><label>Google Drive · OAuth Client ID</label><input type="text" id="cfgGClient" placeholder="xxxx.apps.googleusercontent.com"></div>
+      <div class="field"><label>Dropbox · App key</label><input type="text" id="cfgDbKey" placeholder="abc123xyz"></div>
+      <p class="help">Endereço deste site para cadastrar nos apps (Redirect URI): <b class="mono" id="cfgRedirect"></b></p>
+      <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" data-close>Cancelar</button><button class="btn btn-primary" id="cfgSave">Salvar</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="assets/js/config.js"></script>
+<script type="module" src="assets/js/app.js"></script>
+</body>
+</html>

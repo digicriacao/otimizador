@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><title>Conectando…</title>
+<style>body{font-family:system-ui,sans-serif;background:#F7F7F8;color:#222323;display:grid;place-items:center;height:100vh;margin:0}p{font-size:15px}b{color:#EA0356}</style>
+</head>
+<body>
+<p><b>●</b> Conectando… esta janela fecha sozinha.</p>
+<script>
+  // Página de retorno do login.
+  // - Microsoft (MSAL): a janela principal lê o endereço desta página e fecha o popup sozinha.
+  // - Dropbox: repassamos o código de autorização para a janela principal.
+  (function () {
+    var q = new URLSearchParams(location.search);
+    var state = q.get('state') || '';
+    if (state.indexOf('dbx_') === 0 && window.opener) {
+      window.opener.postMessage({ state: state, code: q.get('code'), error: q.get('error_description') || q.get('error') }, location.origin);
+      window.close();
+    }
+  })();
+</script>
+</body>
+</html>

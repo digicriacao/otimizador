@@ -22,6 +22,7 @@ Plataforma web para **converter, redimensionar, renomear e otimizar imagens em l
 | Onde processar | **No navegador** (padrão) ou **Online** (GitHub Actions). Imagens do SharePoint são sempre processadas no navegador |
 | Saída | ZIP (mantendo subpastas), salvar direto numa pasta do computador (Chrome/Edge), enviar de volta para a nuvem (em subpasta ou na mesma pasta) |
 | Visual | Tema claro e escuro (segue o sistema, com botão no topo), favicon animado que mostra o progresso do lote, imagem de compartilhamento (OG) |
+| Guia | **Boas práticas para imagens** (abaixo das opções): formatos, qualidade, tamanhos, pesos-alvo, srcset, performance, favicon, OG, redes sociais, e-mail, GIF, logos, cor, nomes, acessibilidade, impressão e checklist. Link direto: `#boas-praticas`. Texto editável em `assets/js/guide.js` |
 | Extras | Comparador antes/depois, resumo da economia, predefinições (Web, Redes sociais, E-mail marketing, Miniatura, Responsivo…) e predefinições próprias, código `<img srcset>` pronto com `width`, `height` e `loading="lazy"` |
 
 ## Estrutura
@@ -41,6 +42,7 @@ assets/
   js/config.js          IDs do SharePoint e endereço do intermediário do modo Online
   js/favicon.js         animação do favicon
   js/online.js          envio e acompanhamento do processamento online
+  js/guide.js           conteúdo do guia de boas práticas
   js/app.js             fila, opções, downloads e envio
   js/worker.js          processamento (roda em segundo plano)
   js/dims.js            cálculo de dimensões

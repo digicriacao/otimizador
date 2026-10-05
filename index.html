@@ -295,10 +295,31 @@
         <div class="field" id="fSubfolder"><label>Nome da subpasta</label><input type="text" id="subfolder" value="otimizadas"></div>
       </div>
     </details>
+
+    <button class="guide-link" id="btnGuide" type="button">
+      <span class="guide-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg></span>
+      <span class="guide-txt"><b>Boas práticas para imagens</b><small>Formatos, tamanhos, favicon, redes sociais e mais</small></span>
+      <span class="guide-arrow">→</span>
+    </button>
   </aside>
 </main>
 
 <footer class="foot"><img class="logo-theme-light" src="public/logo-escuro.png" alt="digi" width="32" height="18"><img class="logo-theme-dark" src="public/logo-claro.png" alt="digi" width="32" height="18"><span>Codecs MozJPEG, OxiPNG, libwebp, libavif (Squoosh) e Gifsicle rodando em WebAssembly no seu navegador.</span></footer>
+
+<!-- Guia de boas práticas -->
+<div class="modal hidden" id="guideModal" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+  <div class="modal-box guide-box">
+    <div class="modal-head">
+      <h3 id="guideTitle">Boas práticas para imagens</h3>
+      <span class="g-updated" id="guideUpdated"></span>
+      <button class="icon-btn" data-close aria-label="Fechar">✕</button>
+    </div>
+    <div class="guide">
+      <nav class="guide-toc" id="guideToc" aria-label="Índice"></nav>
+      <div class="guide-body" id="guideBody" tabindex="0"></div>
+    </div>
+  </div>
+</div>
 
 <!-- Comparar antes/depois -->
 <div class="modal hidden" id="cmpModal">

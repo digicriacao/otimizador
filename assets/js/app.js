@@ -746,6 +746,45 @@ function applyMode(mode, silent) {
 }
 $$('#modeSeg button').forEach((b) => b.addEventListener('click', () => applyMode(b.dataset.v)));
 
+/* ======================== Guia de boas práticas ========================= */
+let guideBuilt = false;
+async function openGuide(sectionId) {
+  if (!guideBuilt) {
+    const { SECTIONS, GUIDE_UPDATED } = await import('./guide.js');
+    $('guideUpdated').textContent = `Atualizado em ${GUIDE_UPDATED}`;
+    $('guideToc').innerHTML = SECTIONS.map((sec, i) => `<a href="#g-${sec.id}" data-id="${sec.id}"><span>${String(i + 1).padStart(2, '0')}</span>${sec.title}</a>`).join('');
+    $('guideBody').innerHTML = SECTIONS.map((sec, i) => `<section id="g-${sec.id}"><h2><small>${String(i + 1).padStart(2, '0')}</small>${sec.title}</h2>${sec.html}</section>`).join('');
+    const body = $('guideBody');
+    $('guideToc').addEventListener('click', (e) => {
+      const a = e.target.closest('a'); if (!a) return;
+      e.preventDefault();
+      body.querySelector('#g-' + a.dataset.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    body.addEventListener('click', async (e) => {
+      const b = e.target.closest('.g-copy'); if (!b) return;
+      try { await navigator.clipboard.writeText(b.nextElementSibling.textContent); b.textContent = 'Copiado!'; }
+      catch (_) { b.textContent = 'Selecione e copie'; }
+      setTimeout(() => { b.textContent = 'Copiar'; }, 1500);
+    });
+    // Destaca no índice a seção visível
+    const links = new Map($$('#guideToc a').map((a) => [a.dataset.id, a]));
+    const setActive = (id) => links.forEach((a, k) => { a.classList.toggle('active', k === id); if (k === id) a.scrollIntoView({ block: 'nearest', inline: 'nearest' }); });
+    body.addEventListener('scroll', () => {
+      const top = body.getBoundingClientRect().top + 90;
+      let current = SECTIONS[0].id;
+      for (const sec of body.querySelectorAll('section')) { if (sec.getBoundingClientRect().top <= top) current = sec.id.slice(2); }
+      if (body.scrollTop + body.clientHeight >= body.scrollHeight - 4) current = SECTIONS[SECTIONS.length - 1].id;
+      setActive(current);
+    }, { passive: true });
+    setActive(SECTIONS[0].id);
+    guideBuilt = true;
+  }
+  openModal('guideModal');
+  if (sectionId) $('guideBody').querySelector('#g-' + sectionId)?.scrollIntoView({ block: 'start' });
+}
+$('btnGuide').onclick = () => openGuide();
+if (location.hash === '#boas-praticas') openGuide();
+
 /* =============================== Tema ==================================== */
 $('btnTheme').onclick = () => {
   const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';

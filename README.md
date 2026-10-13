@@ -1,4 +1,4 @@
-# Otimizador de Imagens · Digi
+# Otimizador de Imagens e PDF · Digi
 
 Plataforma web para **converter, redimensionar, renomear e otimizar imagens em lote**, com leitura direta de pastas do **SharePoint/OneDrive**. Por padrão roda 100% no navegador, sem servidor e sem custo. Há também um modo **Online**, gratuito, que processa os lotes nos servidores do GitHub Actions.
 
@@ -25,6 +25,27 @@ Plataforma web para **converter, redimensionar, renomear e otimizar imagens em l
 | Guia | **Boas práticas para imagens** (abaixo das opções): formatos, qualidade, tamanhos, pesos-alvo, srcset, performance, favicon, OG, redes sociais, e-mail, GIF, logos, cor, nomes, acessibilidade, impressão e checklist. Link direto: `#boas-praticas`. Texto editável em `assets/js/guide.js` |
 | Extras | Comparador antes/depois, resumo da economia, predefinições (Web, Redes sociais, E-mail marketing, Miniatura, Responsivo…) e predefinições próprias, código `<img srcset>` pronto com `width`, `height` e `loading="lazy"` |
 
+## Área de PDF
+
+O botão **PDF** no topo abre as ferramentas de PDF. Tudo roda no navegador; só a compressão no modo Online usa o GitHub.
+
+| Ferramenta | O que faz |
+| --- | --- |
+| Comprimir | Recomprime as imagens de dentro do PDF (Leve, Recomendada, Forte) mantendo texto e vetores pesquisáveis. **Extrema** transforma cada página em imagem (para escaneados). Opção de tons de cinza e de remover metadados. No modo **Online**, usa o Ghostscript, que costuma comprimir ainda mais |
+| Juntar | Une vários PDFs e imagens na ordem da lista (arraste para reordenar) |
+| Dividir | Cada página em um arquivo, a cada N páginas, por intervalos (`1-3, 5, 8-`) ou extrair páginas para um único arquivo |
+| Organizar páginas | Miniaturas de todas as páginas: excluir, girar, reordenar arrastando, inverter, extrair as selecionadas. Atalhos: Delete, R, Ctrl+A |
+| PDF para imagem | Páginas em JPG, PNG ou WebP, de 72 a 300 dpi; pode mandar o resultado direto para a área de Imagens |
+| Imagem para PDF | Monta um PDF (A4, Carta, A3, A5 ou tamanho da imagem), com orientação, margem e otimização das imagens |
+| Numerar páginas | "1", "1 de 10", "Página 1 de 10"…, em 6 posições, com cor, tamanho, margem e opção de pular a capa |
+| Marca d'água | Texto com opacidade, cor e tamanho, no centro ou repetido, na diagonal ou na horizontal |
+| Senha | Protege com AES-256 (com permissões de imprimir, copiar e editar) ou remove a senha de um PDF |
+| Metadados | Edita título, autor, assunto e palavras-chave, ou remove todos os metadados |
+
+Cada resultado pode ser aberto, baixado ou **reaproveitado como entrada** de outra ferramenta (por exemplo: juntar → numerar → comprimir). PDFs protegidos só contra edição são liberados automaticamente; os que têm senha de abertura precisam passar antes pela ferramenta Senha.
+
+Bibliotecas: pdf-lib (MIT), pdf.js (Apache 2.0) e qpdf em WebAssembly (Apache 2.0), já incluídas em `vendor/`.
+
 ## Estrutura
 
 ```
@@ -43,6 +64,7 @@ assets/
   js/favicon.js         animação do favicon
   js/online.js          envio e acompanhamento do processamento online
   js/guide.js           conteúdo do guia de boas práticas
+  js/pdf/               área de PDF: pdf-app.js (tela), pdf-ops.js (operações), pdf-worker.js (compressão), qpdf-worker.js (senha)
   js/app.js             fila, opções, downloads e envio
   js/worker.js          processamento (roda em segundo plano)
   js/dims.js            cálculo de dimensões
@@ -90,7 +112,7 @@ Uso: no SharePoint, clique com o botão direito na pasta → **Copiar link** →
 No topo da fila, o seletor **No navegador / Online** escolhe onde as imagens são processadas. No modo Online:
 
 1. a plataforma compacta o lote e cria um branch temporário `jobs/<id>` num **repositório privado**;
-2. o GitHub Actions otimiza as imagens (sharp/libvips, MozJPEG, libwebp, libavif, Gifsicle, HEIC);
+2. o GitHub Actions otimiza as imagens (sharp/libvips, MozJPEG, libwebp, libavif, Gifsicle, HEIC) ou comprime os PDFs (Ghostscript);
 3. a plataforma baixa o resultado para a mesma fila e **apaga o branch**. Um workflow diário apaga lotes esquecidos.
 
 As opções, os nomes, o ZIP, o comparador e o código `<picture>` funcionam igual aos do modo local.
@@ -145,4 +167,4 @@ As opções, os nomes, o ZIP, o comparador e o código `<picture>` funcionam igu
 
 ## Bibliotecas incluídas (todas de código aberto)
 
-jSquash (MozJPEG, OxiPNG, libwebp, libavif, resize) · gifsicle-wasm-browser · image-q · SVGO · heic2any · fflate · MSAL.js. As licenças estão na pasta `vendor/`.
+jSquash (MozJPEG, OxiPNG, libwebp, libavif, resize) · gifsicle-wasm-browser · image-q · SVGO · heic2any · fflate · MSAL.js · pdf-lib · pdf.js · qpdf. As licenças estão na pasta `vendor/`.

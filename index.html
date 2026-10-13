@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Otimizador de Imagens · Digi</title>
-<meta name="description" content="Converta, redimensione, renomeie e otimize imagens em lote, direto no navegador. JPG, PNG, WebP, AVIF e GIF, com integração ao SharePoint.">
+<meta name="description" content="Otimize imagens e PDFs em lote, direto no navegador: converta, redimensione e renomeie imagens; comprima, junte, divida e organize PDFs.">
 <meta name="theme-color" content="#EA0356">
 
 <!-- Compartilhamento (Open Graph / redes sociais) -->
@@ -12,7 +12,7 @@
 <meta property="og:site_name" content="Digi">
 <meta property="og:locale" content="pt_BR">
 <meta property="og:title" content="Otimizador de Imagens · Digi">
-<meta property="og:description" content="Converta, redimensione, renomeie e otimize imagens em lote, direto no navegador. JPG, PNG, WebP, AVIF e GIF, com integração ao SharePoint.">
+<meta property="og:description" content="Otimize imagens e PDFs em lote, direto no navegador: converta, redimensione e renomeie imagens; comprima, junte, divida e organize PDFs.">
 <meta property="og:url" content="https://digicriacao.github.io/otimizador/">
 <meta property="og:image" content="https://digicriacao.github.io/otimizador/public/og-image.png">
 <meta property="og:image:width" content="1200">
@@ -20,7 +20,7 @@
 <meta property="og:image:alt" content="Otimizador de Imagens da Digi">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Otimizador de Imagens · Digi">
-<meta name="twitter:description" content="Converta, redimensione, renomeie e otimize imagens em lote, direto no navegador. JPG, PNG, WebP, AVIF e GIF, com integração ao SharePoint.">
+<meta name="twitter:description" content="Otimize imagens e PDFs em lote, direto no navegador: converta, redimensione e renomeie imagens; comprima, junte, divida e organize PDFs.">
 <meta name="twitter:image" content="https://digicriacao.github.io/otimizador/public/og-image.png">
 
 <!-- Favicon (a animação é aplicada pelo assets/js/favicon.js) -->
@@ -48,8 +48,18 @@
   <div class="topbar-inner">
     <img class="logo" src="public/logo-rosa.png" alt="digi" width="54" height="30" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-fallback',textContent:'digi'}))">
     <div class="divider"></div>
-    <div class="brand-title">Otimizador <span>de imagens</span></div>
+    <div class="brand-title">Otimizador <span id="brandSub">de imagens</span></div>
+    <nav class="ws-switch" id="wsSwitch" aria-label="Área de trabalho">
+      <button data-ws="img" class="active" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Imagens</button>
+      <button data-ws="pdf" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>PDF</button>
+    </nav>
     <div class="spacer"></div>
+    <nav class="apps" aria-label="Outras ferramentas da Digi">
+      <a href="https://digicriacao.github.io/revisor/" target="_blank" rel="noopener">Sof<b>.</b>ia</a>
+      <a href="https://reguas.digi.ag/" target="_blank" rel="noopener">Digi Réguas</a>
+      <a href="https://digicriacao.github.io/criadigi/" target="_blank" rel="noopener">CriaDigi</a>
+      <a href="https://digicriacao.github.io/pauta/" target="_blank" rel="noopener">Pauta</a>
+    </nav>
     <span class="privacy-pill" id="modePill" title="As imagens são processadas no seu navegador. Nada é enviado para servidores."><i></i><span>Processamento local</span></span>
     <button class="icon-btn theme-toggle" id="btnTheme" title="Alternar tema claro/escuro" aria-label="Alternar tema">
       <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -58,7 +68,7 @@
   </div>
 </header>
 
-<main class="layout">
+<main class="layout" id="wsImg">
   <!-- ============================ COLUNA PRINCIPAL ============================ -->
   <section>
     <div class="card">
@@ -296,9 +306,86 @@
       </div>
     </details>
 
-    <button class="guide-link" id="btnGuide" type="button">
+    <button class="guide-link" id="btnGuide" data-guide="" type="button">
       <span class="guide-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg></span>
       <span class="guide-txt"><b>Boas práticas para imagens</b><small>Formatos, tamanhos, favicon, redes sociais e mais</small></span>
+      <span class="guide-arrow">→</span>
+    </button>
+  </aside>
+</main>
+
+<!-- ============================== ÁREA DE PDF ============================== -->
+<main class="layout hidden" id="wsPdf">
+  <section>
+    <div class="card card-pad">
+      <h2 class="section">Escolha a ferramenta</h2>
+      <div class="pdf-tools" id="pdfTools"></div>
+    </div>
+
+    <div class="card queue-card">
+      <div class="tab-panel">
+        <label class="drop" id="pdfDrop">
+          <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15l3-3 3 3"/></svg>
+          <strong id="pdfDropTitle">Arraste PDFs aqui</strong>
+          <p>ou clique para escolher · também dá para colar com Ctrl+V</p>
+          <div class="formats" id="pdfDropFormats">PDF</div>
+          <input type="file" id="pdfInput" multiple accept=".pdf,application/pdf" hidden>
+        </label>
+      </div>
+      <div class="queue-head" style="border-top:1px solid var(--line-soft)">
+        <h2>Arquivos <span class="count" id="pdfCount">0 arquivos</span></h2>
+        <div class="spacer"></div>
+        <span class="cloud-hint" id="pdfOrderHint"></span>
+        <button class="btn btn-ghost btn-sm" id="pdfClear" type="button">Limpar</button>
+      </div>
+      <ul class="queue" id="pdfFiles"><li class="empty">Adicione arquivos para começar.</li></ul>
+    </div>
+
+    <div class="card queue-card hidden" id="pageEditor">
+      <div class="queue-head">
+        <h2>Páginas <span class="count" id="peCount"></span></h2>
+        <div class="spacer"></div>
+        <div class="pe-toolbar">
+          <button class="btn btn-sm" data-pe="all" type="button">Selecionar todas</button>
+          <button class="btn btn-sm" data-pe="left" type="button" title="Girar para a esquerda">⟲</button>
+          <button class="btn btn-sm" data-pe="right" type="button" title="Girar para a direita">⟳</button>
+          <button class="btn btn-sm" data-pe="reverse" type="button" title="Inverter a ordem">⇅ Inverter</button>
+          <button class="btn btn-sm pe-del" data-pe="del" type="button">Excluir</button>
+          <button class="btn btn-ghost btn-sm" data-pe="reset" type="button">Restaurar</button>
+        </div>
+      </div>
+      <div class="pe-grid" id="peGrid"></div>
+    </div>
+
+    <div class="card queue-card hidden" id="pdfResultsCard">
+      <div class="queue-head">
+        <h2>Resultado <span class="count" id="pdfResCount"></span></h2>
+        <div class="spacer"></div>
+        <button class="btn btn-ghost btn-sm" id="pdfResClear" type="button">Limpar</button>
+        <button class="btn btn-primary" id="pdfZip" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Baixar tudo</button>
+      </div>
+      <div class="summary">
+        <div><small>Original</small><strong id="pdfSumBefore">—</strong></div>
+        <div><small>Resultado</small><strong id="pdfSumAfter">—</strong></div>
+        <div class="saved"><small>Economia</small><strong id="pdfSumSaved">—</strong></div>
+        <div><small>Arquivos</small><strong id="pdfSumFiles">—</strong></div>
+      </div>
+      <ul class="queue" id="pdfResults"></ul>
+    </div>
+  </section>
+
+  <aside class="card settings">
+    <div class="card-pad">
+      <h2 class="section">Opções</h2>
+      <div class="pdf-tool-head"><b id="pdfToolTitle"></b><p class="help" id="pdfToolDesc"></p></div>
+      <div id="pdfOptions"></div>
+      <div class="progress pdf-progress"><i id="pdfProg"></i></div>
+      <button class="btn btn-primary btn-block" id="pdfRun" type="button">Processar</button>
+      <p class="cloud-hint" style="margin-top:10px">Os arquivos são processados no seu navegador e não são enviados a servidores (exceto na compressão Online).</p>
+    </div>
+    <button class="guide-link" data-guide="pdf" type="button">
+      <span class="guide-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg></span>
+      <span class="guide-txt"><b>Boas práticas para PDF</b><small>Peso ideal, resolução, fontes, senha e mais</small></span>
       <span class="guide-arrow">→</span>
     </button>
   </aside>

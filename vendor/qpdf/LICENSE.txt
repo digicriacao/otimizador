@@ -1,0 +1,2 @@
+qpdf 12.2 compilado para WebAssembly (@neslinesli93/qpdf-wasm, ISC).
+qpdf: Apache License 2.0 - https://github.com/qpdf/qpdf

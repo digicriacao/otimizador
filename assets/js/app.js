@@ -782,7 +782,7 @@ async function openGuide(sectionId) {
   openModal('guideModal');
   if (sectionId) $('guideBody').querySelector('#g-' + sectionId)?.scrollIntoView({ block: 'start' });
 }
-$('btnGuide').onclick = () => openGuide();
+$$('[data-guide]').forEach((b) => b.addEventListener('click', () => openGuide(b.dataset.guide || undefined)));
 if (location.hash === '#boas-praticas') openGuide();
 
 /* =============================== Tema ==================================== */
@@ -818,4 +818,23 @@ applyMode(store.get('mode', 'local'), true);
 // Remove dados de versões anteriores (token e IDs salvos no navegador)
 try { localStorage.removeItem('otimizador.online'); localStorage.removeItem('otimizador.cloud'); } catch (_) { /* ok */ }
 renderQueue();
-window.__otimizador = { state, addEntries, runAll, finalFiles }; // útil para testes
+/* ======================== Área de trabalho (Imagens / PDF) ======================== */
+let pdfLoaded = null;
+async function setWorkspace(ws) {
+  ws = ws === 'pdf' ? 'pdf' : 'img';
+  $$('#wsSwitch button').forEach((b) => b.classList.toggle('active', b.dataset.ws === ws));
+  $('wsImg').classList.toggle('hidden', ws !== 'img');
+  $('wsPdf').classList.toggle('hidden', ws !== 'pdf');
+  $('brandSub').textContent = ws === 'pdf' ? 'de PDF' : 'de imagens';
+  store.set('ws', ws);
+  if (ws === 'pdf' && !pdfLoaded) {
+    pdfLoaded = import('./pdf/pdf-app.js').then((m) => m.initPdf({
+      toast, isOnlineReady, splitJobs, runOnlineJob,
+      addToImageQueue: (files) => { addEntries(fromFileList(files)); setWorkspace('img'); },
+    })).catch((err) => { console.error(err); toast('Não foi possível carregar as ferramentas de PDF', 'err'); pdfLoaded = null; });
+  }
+}
+$$('#wsSwitch button').forEach((b) => b.addEventListener('click', () => setWorkspace(b.dataset.ws)));
+setWorkspace(location.hash === '#pdf' ? 'pdf' : store.get('ws', 'img'));
+
+window.__otimizador = { state, addEntries, runAll, finalFiles, setWorkspace }; // útil para testes

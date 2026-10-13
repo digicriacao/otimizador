@@ -352,6 +352,32 @@ ${tip('Em <b>Nome dos arquivos</b>: ligue <b>Nome amigável para web</b>, use <b
 </ul>`,
   },
   {
+    id: 'pdf', title: 'PDFs',
+    html: `
+<table class="g-table">
+  <thead><tr><th>Uso</th><th>Peso-alvo</th><th>Imagens dentro do PDF</th></tr></thead>
+  <tbody>
+    <tr><td>Anexo de e-mail</td><td><b>até 2 MB</b> (máx. 10 MB)</td><td>150 dpi, qualidade média</td></tr>
+    <tr><td>Download em site / link</td><td><b>até 5 MB</b></td><td>150 dpi</td></tr>
+    <tr><td>WhatsApp / Teams</td><td><b>até 5 MB</b></td><td>110 a 150 dpi</td></tr>
+    <tr><td>Apresentação para leitura em tela</td><td><b>até 10 MB</b></td><td>150 dpi</td></tr>
+    <tr><td>Gráfica / impressão</td><td>sem limite</td><td><b>300 dpi</b>, sem compressão forte</td></tr>
+  </tbody>
+</table>
+<ul class="g-check">
+  <li><b>Comprima antes de enviar:</b> PDFs exportados do PowerPoint, Illustrator ou InDesign costumam carregar imagens em resolução de impressão e ficam de 5 a 20 vezes maiores do que precisam para a tela.</li>
+  <li><b>Exporte certo na origem:</b> no InDesign e no Illustrator, use o perfil <i>Smallest File Size</i> ou <i>[Tamanho de arquivo menor]</i> para tela e <i>PDF/X-4</i> para gráfica.</li>
+  <li><b>Fontes incorporadas</b> (com subconjunto) garantem que o texto apareça igual em qualquer computador.</li>
+  <li><b>Texto como texto:</b> não transforme o documento inteiro em imagem. PDF com texto real é mais leve, pesquisável, acessível e lido pelo Google. A compressão "Extrema" faz isso, então use só para documentos escaneados.</li>
+  <li><b>Nome do arquivo e título:</b> o título dos metadados aparece na aba do navegador e nos resultados de busca. Preencha em <i>Metadados</i>.</li>
+  <li><b>Remova metadados</b> antes de enviar para fora: nome de quem criou, programa usado e histórico de edição podem estar no arquivo.</li>
+  <li><b>Senha protege o acesso, não é segredo absoluto:</b> use senhas longas e envie a senha por outro canal (não no mesmo e-mail do anexo). A restrição de "impedir cópia ou impressão" é respeitada pelos leitores, mas pode ser contornada.</li>
+  <li><b>Documentos escaneados:</b> 200 a 300 dpi em tons de cinza bastam para leitura. Cor só quando o conteúdo precisa.</li>
+  <li><b>Arquivamento de longo prazo:</b> prefira o padrão PDF/A, gerado pelo programa de origem.</li>
+</ul>
+${tip('Na área <b>PDF</b> (botão no topo): <b>Comprimir → Recomendada</b> resolve a maioria dos casos sem perder a nitidez do texto. Use <b>Organizar páginas</b> para tirar páginas em branco, <b>Juntar</b> para montar um único arquivo de proposta e <b>Senha</b> para documentos confidenciais.')}`,
+  },
+  {
     id: 'impressao', title: 'Impressão x tela',
     html: `
 <table class="g-table">
@@ -380,6 +406,7 @@ ${warn('Não use arquivos otimizados para web em impressão. Envie sempre o orig
   <li><label><input type="checkbox"> width e height no HTML; lazy loading fora da primeira tela</label></li>
   <li><label><input type="checkbox"> Versões responsivas (srcset) para imagens grandes</label></li>
   <li><label><input type="checkbox"> Imagem OG de 1200 × 630 testada no Post Inspector</label></li>
+  <li><label><input type="checkbox"> PDF comprimido, com título e sem metadados internos</label></li>
   <li><label><input type="checkbox"> Original guardado em alta qualidade</label></li>
 </ul>
 <p class="g-note">As marcações desta lista não ficam salvas. Servem só para conferência rápida.</p>`,
